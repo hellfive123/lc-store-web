@@ -3,58 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC.Store - Limbus Starter Shop</title>
+    <title>LC.Store | Limbus Company Starter Specialist</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #c40000; --accent: #ffcc00; --bg: #0a0a0a; --card: #161616; --text: #fff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
-        header { text-align: center; padding: 40px 20px; border-bottom: 2px solid var(--primary); background: linear-gradient(to bottom, #1a0000, #0a0a0a); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
-        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; position: relative; transition: 0.3s; }
-        .card.sold-out { opacity: 0.6; grayscale(0.8); }
-        .img-box { width: 100%; aspect-ratio: 1/1; cursor: pointer; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .sold-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); border: 4px solid var(--primary); color: var(--primary); padding: 10px; font-size: 2em; font-weight: 900; background: rgba(0,0,0,0.8); z-index: 5; }
-        .info { padding: 15px; }
-        .price { color: var(--accent); font-size: 1.3em; font-weight: bold; margin: 10px 0; }
-        .btn-buy { display: block; background: var(--primary); color: #fff; text-align: center; padding: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; }
-        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
-        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); }
+        :root { --primary: #c40000; --accent: #ffcc00; --bg: #050505; --card: #111; --text: #fff; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; }
+        
+        /* Premium Header */
+        header { height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(rgba(0,0,0,0.6), var(--bg)), url('https://images2.alphacoders.com/131/1313658.png'); background-size: cover; background-position: center; text-align: center; border-bottom: 3px solid var(--primary); }
+        header h1 { font-family: 'Bebas Neue', cursive; font-size: 5rem; margin: 0; letter-spacing: 10px; color: var(--primary); text-shadow: 0 0 20px rgba(196, 0, 0, 0.5); }
+        header p { font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Shop Section */
+        .container { max-width: 1400px; margin: -50px auto 100px; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+        
+        /* Account Card */
+        .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #222; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .card:hover { transform: translateY(-15px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(196, 0, 0, 0.2); }
+        
+        .img-box { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; cursor: zoom-in; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
+        .card:hover .img-box img { transform: scale(1.15); }
+
+        .card-content { padding: 25px; }
+        .acc-code { font-family: 'Bebas Neue', cursive; font-size: 1.8rem; margin: 0 0 10px; color: #fff; }
+        .acc-price { font-size: 1.5rem; color: var(--accent); font-weight: 800; margin-bottom: 20px; display: block; }
+        
+        .btn-buy { display: block; background: var(--primary); color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 12px; font-weight: bold; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-buy:hover { background: white; color: var(--primary); box-shadow: 0 0 30px rgba(255,255,255,0.2); }
+
+        /* Sold State */
+        .sold-out { filter: grayscale(1); opacity: 0.6; }
+        .sold-stamp { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); border: 6px double var(--primary); color: var(--primary); padding: 10px 30px; font-family: 'Bebas Neue'; font-size: 3rem; background: rgba(0,0,0,0.8); z-index: 10; border-radius: 15px; }
+
+        /* Lightbox */
+        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); box-shadow: 0 0 50px var(--primary); }
+
+        @media (max-width: 768px) { header h1 { font-size: 3rem; } }
     </style>
 </head>
 <body>
-    <header><h1>LC.STORE - LIMBUS STARTER</h1></header>
-    <div class="grid" id="userGrid"></div>
+    <header>
+        <h1>LC.STORE</h1>
+        <p>Starter Account - Special Management System</p>
+    </header>
+
+    <div class="container">
+        <div class="grid" id="userGrid"></div>
+    </div>
+
     <div id="lightbox" onclick="this.style.display='none'"><img id="zoomImg"></div>
 
     <script>
         const sb = supabase.createClient('https://hfeqabmrqvxmnetzbkhi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M');
 
         async function loadShop() {
-            // Phải có cột created_at để không bị lỗi 400
-            const { data } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
+            const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
+            if (error) return;
+            
             const grid = document.getElementById('userGrid');
             grid.innerHTML = '';
             data.forEach(p => {
-                const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse?text=Chào shop, mình muốn mua mã [${p.code}]`;
+                const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse?text=Chào shop, mình muốn mua mã [${p.code}] giá ${Number(p.price).toLocaleString()}đ`;
                 grid.innerHTML += `
                     <div class="card ${p.is_sold ? 'sold-out' : ''}">
-                        ${p.is_sold ? '<div class="sold-badge">SOLD</div>' : ''}
+                        ${p.is_sold ? '<div class="sold-stamp">SOLD OUT</div>' : ''}
                         <div class="img-box" onclick="${p.is_sold ? '' : `zoom('${p.image_url}')`}">
                             <img src="${p.image_url}">
                         </div>
-                        <div class="info">
-                            <div style="font-weight:bold;">[${p.code}]</div>
-                            <div class="price">${Number(p.price).toLocaleString()} VNĐ</div>
+                        <div class="card-content">
+                            <h2 class="acc-code">[${p.code}]</h2>
+                            <span class="acc-price">${Number(p.price).toLocaleString()} VNĐ</span>
                             <a href="${p.is_sold ? '#' : fbLink}" target="_blank" class="btn-buy" style="${p.is_sold ? 'background:#333' : ''}">
-                                ${p.is_sold ? 'HẾT HÀNG' : 'CHỐT ĐƠN'}
+                                ${p.is_sold ? 'ĐÃ HẾT HÀNG' : 'LIÊN HỆ MUA NGAY'}
                             </a>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
+
         function zoom(src) { document.getElementById('zoomImg').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+        
+        // Real-time Update
+        sb.channel('shop-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadShop).subscribe();
         loadShop();
     </script>
 </body>
