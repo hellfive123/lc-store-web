@@ -3,59 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC.Store - Limbus Company Starter Shop</title>
+    <title>LC.Store - Limbus Starter Shop</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #c40000; --accent: #ffcc00; --bg: #0a0a0a; --card: #161616; --text: #fff; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
-        header { text-align: center; padding: 50px 20px; border-bottom: 2px solid var(--primary); background: linear-gradient(to bottom, #1a0000, #0a0a0a); }
-        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
-        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #222; transition: 0.4s; position: relative; }
-        .card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(196, 0, 0, 0.2); }
-        .img-box { width: 100%; aspect-ratio: 1/1; cursor: zoom-in; overflow: hidden; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .card:hover .img-box img { transform: scale(1.1); }
-        .info { padding: 20px; }
-        .price { color: var(--accent); font-size: 1.4em; font-weight: 800; margin: 15px 0; }
-        .btn-buy { display: block; background: var(--primary); color: #fff; text-align: center; padding: 12px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        .btn-buy:hover { background: #ff1a1a; box-shadow: 0 0 20px var(--primary); }
-        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
-        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); border-radius: 8px; }
+        header { text-align: center; padding: 40px 20px; border-bottom: 2px solid var(--primary); background: linear-gradient(to bottom, #1a0000, #0a0a0a); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; position: relative; transition: 0.3s; }
+        .card.sold-out { opacity: 0.6; grayscale(0.8); }
+        .img-box { width: 100%; aspect-ratio: 1/1; cursor: pointer; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .sold-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); border: 4px solid var(--primary); color: var(--primary); padding: 10px; font-size: 2em; font-weight: 900; background: rgba(0,0,0,0.8); z-index: 5; }
+        .info { padding: 15px; }
+        .price { color: var(--accent); font-size: 1.3em; font-weight: bold; margin: 10px 0; }
+        .btn-buy { display: block; background: var(--primary); color: #fff; text-align: center; padding: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
+        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); }
     </style>
 </head>
 <body>
-    <header>
-        <h1 style="margin:0; font-size: 2.5em; letter-spacing: 2px;">LC.STORE</h1>
-        <p style="color: #888;">Starter Account - Limbus Company Specialist</p>
-    </header>
-
-    <div class="shop-grid" id="userGrid"></div>
-
+    <header><h1>LC.STORE - LIMBUS STARTER</h1></header>
+    <div class="grid" id="userGrid"></div>
     <div id="lightbox" onclick="this.style.display='none'"><img id="zoomImg"></div>
 
     <script>
-        const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = supabase.createClient('https://hfeqabmrqvxmnetzbkhi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M');
 
         async function loadShop() {
-            const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
-            if (error) return;
-            
+            // Phải có cột created_at để không bị lỗi 400
+            const { data } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
             const grid = document.getElementById('userGrid');
             grid.innerHTML = '';
             data.forEach(p => {
-                const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse?text=Chào shop, mình muốn mua mã [${p.code}] giá ${Number(p.price).toLocaleString()}đ`;
+                const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse?text=Chào shop, mình muốn mua mã [${p.code}]`;
                 grid.innerHTML += `
-                    <div class="card">
-                        <div class="img-box" onclick="zoom('${p.image_url}')">
+                    <div class="card ${p.is_sold ? 'sold-out' : ''}">
+                        ${p.is_sold ? '<div class="sold-badge">SOLD</div>' : ''}
+                        <div class="img-box" onclick="${p.is_sold ? '' : `zoom('${p.image_url}')`}">
                             <img src="${p.image_url}">
                         </div>
                         <div class="info">
-                            <div style="color:#888; font-size:0.85em; text-transform: uppercase;">Starter Account</div>
-                            <div style="font-weight:bold; font-size: 1.1em; margin:8px 0;">[${p.code}]</div>
+                            <div style="font-weight:bold;">[${p.code}]</div>
                             <div class="price">${Number(p.price).toLocaleString()} VNĐ</div>
-                            <a href="${fbLink}" target="_blank" class="btn-buy">MUA NGAY</a>
+                            <a href="${p.is_sold ? '#' : fbLink}" target="_blank" class="btn-buy" style="${p.is_sold ? 'background:#333' : ''}">
+                                ${p.is_sold ? 'HẾT HÀNG' : 'CHỐT ĐƠN'}
+                            </a>
                         </div>
                     </div>
                 `;

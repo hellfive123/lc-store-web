@@ -2,47 +2,42 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>LC.Store - Admin Panel</title>
+    <title>LC.Store - Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #c40000; --bg: #0d0d0d; --card: #1a1a1a; --text: #fff; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; }
-        .form-up { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #333; display: grid; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .form-up { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #333; display: grid; gap: 15px; }
         input, button { padding: 12px; border-radius: 6px; border: 1px solid #444; background: #222; color: #fff; outline: none; }
-        input:focus { border-color: var(--primary); }
-        button { background: var(--primary); font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
+        button { background: var(--primary); font-weight: bold; cursor: pointer; border: none; transition: 0.2s; }
         button:hover { background: #ff1a1a; transform: translateY(-2px); }
         .list-acc { margin-top: 40px; display: grid; gap: 15px; }
         .item { display: flex; align-items: center; background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #333; gap: 20px; }
-        .item img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #444; }
+        .item img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
         .item-info { flex-grow: 1; }
-        .btn-del { background: #333; color: #ff4444; padding: 8px 15px; font-size: 0.8em; }
-        .btn-del:hover { background: #444; }
+        .btn-sold { background: #2e7d32; }
+        .btn-active { background: #555; }
+        .btn-del { color: #ff4444; background: none; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="color: var(--primary); letter-spacing: 1px;">LC.STORE - HỆ THỐNG QUẢN TRỊ</h2>
+        <h2 style="color: var(--primary);">LC.STORE - QUẢN LÝ KHO</h2>
         <div class="form-up">
-            <label>1. Chọn ảnh tài khoản (1080x1080):</label>
             <input type="file" id="imgFile" accept="image/*">
-            <label>2. Thông tin chi tiết:</label>
-            <input type="text" id="accCode" placeholder="Mã số (Ví dụ: LC-Starter-01)">
+            <input type="text" id="accCode" placeholder="Mã số (VD: LC-01)">
             <input type="number" id="accPrice" placeholder="Giá tiền (VNĐ)">
             <button onclick="uploadAcc()" id="btnUpload">XÁC NHẬN UP LÊN CLOUD</button>
         </div>
-
-        <div class="list-acc" id="adminGrid">
-            <p style="text-align: center; color: #888;">Đang tải danh sách kho hàng...</p>
-        </div>
+        <div class="list-acc" id="adminGrid"></div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
         
-        // Dùng sb để tránh trùng tên thư viện
+        // Sử dụng 'sb' để tránh lỗi trùng tên biến 'supabase'
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function uploadAcc() {
@@ -51,76 +46,66 @@
             const price = document.getElementById('accPrice').value;
             const btn = document.getElementById('btnUpload');
 
-            if(!file || !code || !price) return alert("Cường ơi, hãy nhập đủ thông tin nhé!");
-
-            btn.innerText = "ĐANG UP... VUI LÒNG ĐỢI";
+            if(!file || !code || !price) return alert("Nhập đủ thông tin Cường ơi!");
             btn.disabled = true;
 
             try {
-                // 1. Up ảnh lên Bucket 'account-images'
-                const fileName = `${Date.now()}_${file.name}`;
-                const { data: imgData, error: imgErr } = await sb.storage
-                    .from('account-images')
-                    .upload(fileName, file);
-                
+                // Làm sạch tên file để tránh lỗi 'Invalid key'
+                const cleanName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+                const fileName = `${Date.now()}_${cleanName}`;
+
+                // Up ảnh lên Storage
+                const { data: imgData, error: imgErr } = await sb.storage.from('account-images').upload(fileName, file);
                 if(imgErr) throw imgErr;
 
-                // 2. Lấy link ảnh công khai
                 const { data: urlData } = sb.storage.from('account-images').getPublicUrl(fileName);
                 const imgUrl = urlData.publicUrl;
 
-                // 3. Lưu vào bảng 'accounts'
-                const { error: dbErr } = await sb.from('accounts').insert([{ 
-                    code: code, 
-                    price: parseInt(price), 
-                    image_url: imgUrl 
-                }]);
-                
+                // Lưu vào bảng 'accounts'
+                const { error: dbErr } = await sb.from('accounts').insert([{ code, price, image_url: imgUrl, is_sold: false }]);
                 if(dbErr) throw dbErr;
 
-                alert("Up tài khoản thành công!");
+                alert("Thành công!");
                 location.reload();
             } catch (err) {
+                alert("Lỗi: " + err.message);
                 console.error(err);
-                alert("Lỗi: " + (err.message || "Không thể up. Hãy kiểm tra Policy trên Supabase!"));
-            } finally {
-                btn.innerText = "XÁC NHẬN UP LÊN CLOUD";
-                btn.disabled = false;
+            } finally { btn.disabled = false; }
+        }
+
+        async function toggleSold(id, currentStatus) {
+            const { error } = await sb.from('accounts').update({ is_sold: !currentStatus }).eq('id', id);
+            if (!error) location.reload();
+        }
+
+        async function deleteAcc(id) {
+            if(confirm("Xóa acc này khỏi hệ thống?")) {
+                await sb.from('accounts').delete().eq('id', id);
+                location.reload();
             }
         }
 
         async function loadAdmin() {
-            const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
-            if (error) return console.error(error);
-            
+            // Sắp xếp theo created_at (Cần thêm cột này trong Supabase)
+            const { data } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
             const grid = document.getElementById('adminGrid');
-            grid.innerHTML = data.length ? '' : '<p style="text-align: center; color: #888;">Kho hàng đang trống.</p>';
-            
+            grid.innerHTML = '';
             data.forEach(item => {
                 grid.innerHTML += `
-                    <div class="item">
+                    <div class="item" style="${item.is_sold ? 'opacity:0.5' : ''}">
                         <img src="${item.image_url}">
                         <div class="item-info">
-                            <b style="display:block; margin-bottom:5px;">[${item.code}]</b>
-                            <span style="color: #ffcc00;">${Number(item.price).toLocaleString()} VNĐ</span>
+                            <b>[${item.code}] ${item.is_sold ? '(SOLD)' : ''}</b>
+                            <div style="color:var(--accent)">${Number(item.price).toLocaleString()}đ</div>
                         </div>
-                        <button class="btn-del" onclick="deleteAcc('${item.id}', '${item.image_url}')">XÓA</button>
+                        <button class="${item.is_sold ? 'btn-active' : 'btn-sold'}" onclick="toggleSold(${item.id}, ${item.is_sold})">
+                            ${item.is_sold ? 'Mở lại' : 'Đã bán'}
+                        </button>
+                        <button class="btn-del" onclick="deleteAcc(${item.id})">Xóa</button>
                     </div>
                 `;
             });
         }
-
-        async function deleteAcc(id, url) {
-            if(!confirm("Cường có chắc muốn xóa vĩnh viễn tài khoản này?")) return;
-            
-            // Xóa trong DB
-            await sb.from('accounts').delete().eq('id', id);
-            
-            // Lưu ý: Để xóa ảnh trong Storage cần cấu hình thêm, tạm thời ta xóa hiển thị trước
-            alert("Đã xóa xong!");
-            location.reload();
-        }
-
         loadAdmin();
     </script>
 </body>
