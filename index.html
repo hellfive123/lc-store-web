@@ -3,54 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC.Store | Limbus Company Starter Specialist</title>
+    <title>LC.Store | Premium Limbus Shop</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #c40000; --accent: #ffcc00; --bg: #050505; --card: #111; --text: #fff; }
+        :root { --primary: #c40000; --accent: #ffcc00; --bg: #050505; --card: #111; --text: #fff; --input-bg: #1a1a1a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); margin: 0; }
         
-        /* Premium Header */
-        header { height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(rgba(0,0,0,0.6), var(--bg)), url('https://images2.alphacoders.com/131/1313658.png'); background-size: cover; background-position: center; text-align: center; border-bottom: 3px solid var(--primary); }
+        /* Header */
+        header { height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(rgba(0,0,0,0.7), var(--bg)), url('https://images2.alphacoders.com/131/1313658.png'); background-size: cover; background-position: center; text-align: center; border-bottom: 3px solid var(--primary); }
         header h1 { font-family: 'Bebas Neue', cursive; font-size: 5rem; margin: 0; letter-spacing: 10px; color: var(--primary); text-shadow: 0 0 20px rgba(196, 0, 0, 0.5); }
         header p { font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Shop Section */
-        .container { max-width: 1400px; margin: -50px auto 100px; padding: 0 20px; }
+        /* Filter Bar */
+        .filter-container { max-width: 1400px; margin: -40px auto 40px; padding: 0 20px; position: relative; z-index: 20; }
+        .filter-bar { background: #161616; padding: 25px; border-radius: 15px; border: 1px solid #333; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .filter-group { flex: 1; min-width: 200px; }
+        label { display: block; font-size: 0.75rem; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
+        input, select { width: 100%; background: var(--input-bg); border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(196, 0, 0, 0.2); }
+        
+        /* Grid */
+        .container { max-width: 1400px; margin: 0 auto 100px; padding: 0 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
         
-        /* Account Card */
+        /* Card & Effects */
         .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #222; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
         .card:hover { transform: translateY(-15px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(196, 0, 0, 0.2); }
-        
         .img-box { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; cursor: zoom-in; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
-        .card:hover .img-box img { transform: scale(1.15); }
-
+        .card:hover .img-box img { transform: scale(1.1); }
         .card-content { padding: 25px; }
         .acc-code { font-family: 'Bebas Neue', cursive; font-size: 1.8rem; margin: 0 0 10px; color: #fff; }
         .acc-price { font-size: 1.5rem; color: var(--accent); font-weight: 800; margin-bottom: 20px; display: block; }
-        
-        .btn-buy { display: block; background: var(--primary); color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 12px; font-weight: bold; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-buy:hover { background: white; color: var(--primary); box-shadow: 0 0 30px rgba(255,255,255,0.2); }
+        .btn-buy { display: block; background: var(--primary); color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 12px; font-weight: bold; transition: 0.3s; text-transform: uppercase; }
+        .btn-buy:hover { background: white; color: var(--primary); }
 
-        /* Sold State */
-        .sold-out { filter: grayscale(1); opacity: 0.6; }
+        /* Status */
+        .sold-out { filter: grayscale(1); opacity: 0.6; pointer-events: none; }
         .sold-stamp { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); border: 6px double var(--primary); color: var(--primary); padding: 10px 30px; font-family: 'Bebas Neue'; font-size: 3rem; background: rgba(0,0,0,0.8); z-index: 10; border-radius: 15px; }
 
-        /* Lightbox */
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
-        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); box-shadow: 0 0 50px var(--primary); }
+        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); }
 
-        @media (max-width: 768px) { header h1 { font-size: 3rem; } }
+        @media (max-width: 768px) { header h1 { font-size: 3rem; } .filter-bar { flex-direction: column; } }
     </style>
 </head>
 <body>
     <header>
         <h1>LC.STORE</h1>
-        <p>Starter Account - Special Management System</p>
+        <p>Gachaverse Management System | Premium Accounts</p>
     </header>
+
+    <div class="filter-container">
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Tìm kiếm mã số</label>
+                <input type="text" id="searchCode" placeholder="Nhập mã (VD: LC-01)..." oninput="applyFilters()">
+            </div>
+            <div class="filter-group">
+                <label>Giá tối đa (VNĐ)</label>
+                <input type="number" id="maxPrice" placeholder="VD: 500000" oninput="applyFilters()">
+            </div>
+            <div class="filter-group">
+                <label>Trạng thái</label>
+                <select id="statusFilter" onchange="applyFilters()">
+                    <option value="all">Tất cả sản phẩm</option>
+                    <option value="available" selected>Đang còn hàng</option>
+                    <option value="sold">Đã bán (Sold Out)</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
         <div class="grid" id="userGrid"></div>
@@ -60,13 +85,41 @@
 
     <script>
         const sb = supabase.createClient('https://hfeqabmrqvxmnetzbkhi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M');
+        
+        let allAccounts = []; // Lưu trữ dữ liệu gốc để lọc
 
         async function loadShop() {
             const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
-            if (error) return;
+            if (error) return console.error(error);
             
+            allAccounts = data;
+            applyFilters(); // Gọi lọc ngay khi tải xong
+        }
+
+        function applyFilters() {
+            const searchQuery = document.getElementById('searchCode').value.toLowerCase();
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            // Logic lọc dữ liệu
+            const filtered = allAccounts.filter(p => {
+                const matchCode = p.code.toLowerCase().includes(searchQuery);
+                const matchPrice = p.price <= maxPrice;
+                const matchStatus = 
+                    statusFilter === 'all' ? true : 
+                    statusFilter === 'available' ? !p.is_sold : 
+                    p.is_sold;
+
+                return matchCode && matchPrice && matchStatus;
+            });
+
+            renderGrid(filtered);
+        }
+
+        function renderGrid(data) {
             const grid = document.getElementById('userGrid');
-            grid.innerHTML = '';
+            grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; color: #555;">Không tìm thấy tài khoản nào phù hợp...</p>';
+            
             data.forEach(p => {
                 const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse?text=Chào shop, mình muốn mua mã [${p.code}] giá ${Number(p.price).toLocaleString()}đ`;
                 grid.innerHTML += `
