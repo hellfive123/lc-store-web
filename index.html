@@ -3,84 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LC.Store | Limbus Company Shop</title>
+    <title>LC.Store | Limbus Company Premium Shop</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #c40000; --accent: #ffcc00; --bg: #050505; --card: #111; --text: #fff; --input-bg: #1a1a1a; }
+        :root { 
+            --primary: #c40000; 
+            --accent: #ffcc00; 
+            --bg: #050505; 
+            --card: #111; 
+            --text: #fff; 
+            --input-bg: #1a1a1a; 
+            --success: #2e7d32;
+        }
+        
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
-        
-        /* Header Responsive */
-        header { height: 40vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(rgba(0,0,0,0.7), var(--bg)), url('https://images2.alphacoders.com/131/1313658.png'); background-size: cover; background-position: center; text-align: center; border-bottom: 3px solid var(--primary); padding: 0 20px; }
-        header h1 { font-family: 'Bebas Neue', cursive; font-size: clamp(3rem, 10vw, 5rem); margin: 0; letter-spacing: 5px; color: var(--primary); text-shadow: 0 0 20px rgba(196, 0, 0, 0.5); }
-        header p { font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: clamp(0.7rem, 2vw, 1rem); }
+        body { background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; line-height: 1.5; }
 
-        /* Filter Bar Responsive */
-        .filter-container { max-width: 1400px; margin: -30px auto 30px; padding: 0 15px; position: relative; z-index: 20; }
-        .filter-bar { background: #161616; padding: 15px; border-radius: 12px; border: 1px solid #333; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .filter-group { flex: 1; min-width: calc(50% - 6px); } /* 2 cột trên mobile */
-        .filter-group.full-mobile { min-width: 100%; }
-        label { display: block; font-size: 0.65rem; color: #888; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; background: var(--input-bg); border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; outline: none; font-size: 0.9rem; }
-        input:focus { border-color: var(--primary); }
-        
-        /* Grid Sản phẩm - 2 cột trên Mobile, 3-4 cột trên Desktop */
-        .container { max-width: 1400px; margin: 0 auto 50px; padding: 0 10px; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        
-        /* Card Responsive */
-        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; position: relative; transition: 0.3s; display: flex; flex-direction: column; }
-        .img-box { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .card-content { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
-        .acc-code { font-family: 'Bebas Neue', cursive; font-size: 1.2rem; margin: 0 0 5px; color: #fff; line-height: 1; }
-        .acc-price { font-size: 1rem; color: var(--accent); font-weight: 800; margin-bottom: 12px; display: block; }
-        .btn-buy { width: 100%; background: var(--primary); color: white; text-align: center; padding: 10px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; margin-top: auto; }
+        /* --- HEADER SECTION --- */
+        header { 
+            height: 45vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            background: linear-gradient(rgba(0,0,0,0.7), var(--bg)), url('https://images2.alphacoders.com/131/1313658.png'); 
+            background-size: cover; 
+            background-position: center; 
+            text-align: center; 
+            border-bottom: 3px solid var(--primary); 
+            padding: 0 20px; 
+        }
+        header h1 { 
+            font-family: 'Bebas Neue', cursive; 
+            font-size: clamp(3.5rem, 12vw, 6rem); 
+            margin: 0; 
+            letter-spacing: 8px; 
+            color: var(--primary); 
+            text-shadow: 0 0 30px rgba(196, 0, 0, 0.6); 
+        }
+        header p { 
+            font-weight: bold; 
+            color: var(--accent); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-size: clamp(0.8rem, 2.5vw, 1.1rem); 
+            margin-top: -10px;
+        }
 
-        /* Sold State */
-        .sold-out { filter: grayscale(1); opacity: 0.6; }
-        .sold-stamp { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); border: 3px double var(--primary); color: var(--primary); padding: 5px 15px; font-family: 'Bebas Neue'; font-size: 1.5rem; background: rgba(0,0,0,0.8); z-index: 10; border-radius: 8px; white-space: nowrap; }
+        /* --- FILTER SYSTEM --- */
+        .filter-container { max-width: 1400px; margin: -40px auto 40px; padding: 0 15px; position: relative; z-index: 100; }
+        .filter-bar { 
+            background: #161616; 
+            padding: 20px; 
+            border-radius: 15px; 
+            border: 1px solid #333; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            align-items: flex-end; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+        }
+        .filter-group { flex: 1; min-width: calc(50% - 8px); }
+        .filter-group.full-width { min-width: 100%; }
+        
+        label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; }
+        input, select { 
+            width: 100%; 
+            background: var(--input-bg); 
+            border: 1px solid #333; 
+            color: #fff; 
+            padding: 12px; 
+            border-radius: 10px; 
+            outline: none; 
+            font-size: 0.95rem; 
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 12px rgba(196, 0, 0, 0.3); }
 
-        /* Lightbox Responsive */
-        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        /* --- PRODUCT GRID --- */
+        .container { max-width: 1400px; margin: 0 auto 100px; padding: 0 12px; }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); /* 2 cột cố định trên mobile */
+            gap: 15px; 
+        }
+
+        /* --- ACCOUNT CARD --- */
+        .card { 
+            background: var(--card); 
+            border-radius: 16px; 
+            overflow: hidden; 
+            border: 1px solid #222; 
+            position: relative; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .card:hover { transform: translateY(-8px); border-color: var(--primary); }
+        
+        .img-box { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; cursor: zoom-in; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+        
+        .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .acc-code { font-family: 'Bebas Neue', cursive; font-size: 1.4rem; margin: 0 0 4px; color: #fff; letter-spacing: 1px; }
+        .acc-price { font-size: 1.1rem; color: var(--accent); font-weight: 800; margin-bottom: 15px; display: block; }
+        
+        /* Buttons */
+        .btn-copy { 
+            width: 100%; 
+            background: rgba(255, 204, 0, 0.05); 
+            color: var(--accent); 
+            border: 1px solid var(--accent); 
+            padding: 10px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            margin-bottom: 10px; 
+            transition: 0.3s; 
+        }
+        .btn-copy:active { transform: scale(0.95); background: var(--accent); color: #000; }
+
+        .btn-buy { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            text-align: center; 
+            padding: 12px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            margin-top: auto; 
+            transition: 0.3s;
+        }
+
+        /* Status & Effects */
+        .sold-out { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
+        .sold-stamp { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%) rotate(-15deg); 
+            border: 4px double var(--primary); 
+            color: var(--primary); 
+            padding: 8px 20px; 
+            font-family: 'Bebas Neue'; 
+            font-size: 2rem; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 10; 
+            border-radius: 10px; 
+        }
+
+        /* Notifications & Lightbox */
+        #toast { 
+            position: fixed; 
+            bottom: 30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--success); 
+            color: white; 
+            padding: 12px 25px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            display: none; 
+            z-index: 9999; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        #lightbox { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.98); 
+            z-index: 10000; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 15px; 
+        }
         #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border: 1px solid var(--primary); }
 
-        /* Media Queries cho Desktop */
+        /* --- DESKTOP OPTIMIZATION --- */
         @media (min-width: 768px) {
-            header { height: 50vh; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+            header { height: 55vh; }
+            .filter-bar { padding: 30px; gap: 25px; }
             .filter-group { min-width: 200px; }
-            .acc-code { font-size: 1.8rem; }
-            .acc-price { font-size: 1.5rem; }
-            .card-content { padding: 25px; }
-            .btn-buy { padding: 15px; font-size: 1rem; }
-            .sold-stamp { font-size: 3rem; border-width: 6px; padding: 10px 30px; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 35px; }
+            .acc-code { font-size: 2rem; }
+            .acc-price { font-size: 1.6rem; }
+            .btn-buy:hover { background: #fff; color: var(--primary); }
+            .sold-stamp { font-size: 4rem; padding: 15px 40px; }
         }
     </style>
 </head>
 <body>
+
     <header>
         <h1>LC.STORE</h1>
-        <p>Gachaverse Management System | Premium Accounts</p>
+        <p>Premium Limbus Company Account Warehouse</p>
     </header>
 
     <div class="filter-container">
         <div class="filter-bar">
-            <div class="filter-group full-mobile">
-                <label>Tìm kiếm mã số</label>
-                <input type="text" id="searchCode" placeholder="Nhập mã..." oninput="applyFilters()">
+            <div class="filter-group full-width">
+                <label>🔍 Tìm kiếm mã số</label>
+                <input type="text" id="searchCode" placeholder="Nhập mã cần tìm (VD: LC-01)..." oninput="applyFilters()">
             </div>
             <div class="filter-group">
-                <label>Giá tối đa</label>
-                <input type="number" id="maxPrice" placeholder="VNĐ" oninput="applyFilters()">
+                <label>💰 Giá tối đa (VNĐ)</label>
+                <input type="number" id="maxPrice" placeholder="VD: 500000" oninput="applyFilters()">
             </div>
             <div class="filter-group">
-                <label>Trạng thái</label>
+                <label>🛡️ Trạng thái kho</label>
                 <select id="statusFilter" onchange="applyFilters()">
-                    <option value="all">Tất cả</option>
-                    <option value="available" selected>Còn hàng</option>
-                    <option value="sold">Đã bán</option>
+                    <option value="all">Tất cả sản phẩm</option>
+                    <option value="available" selected>Đang còn hàng</option>
+                    <option value="sold">Đã bán (Sold Out)</option>
                 </select>
             </div>
         </div>
@@ -91,15 +235,19 @@
     </div>
 
     <div id="lightbox" onclick="this.style.display='none'"><img id="zoomImg"></div>
+    <div id="toast">Đã copy thông tin!</div>
 
     <script>
-        const sb = supabase.createClient('https://hfeqabmrqvxmnetzbkhi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M');
-        
+        const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let allAccounts = [];
 
         async function loadShop() {
             const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
-            if (error) return console.error(error);
+            if (error) return console.error("Lỗi lấy dữ liệu:", error);
+            
             allAccounts = data;
             applyFilters();
         }
@@ -112,38 +260,76 @@
             const filtered = allAccounts.filter(p => {
                 const matchCode = p.code.toLowerCase().includes(searchQuery);
                 const matchPrice = p.price <= maxPrice;
-                const matchStatus = statusFilter === 'all' ? true : statusFilter === 'available' ? !p.is_sold : p.is_sold;
+                const matchStatus = 
+                    statusFilter === 'all' ? true : 
+                    statusFilter === 'available' ? !p.is_sold : 
+                    p.is_sold;
+
                 return matchCode && matchPrice && matchStatus;
             });
+
             renderGrid(filtered);
+        }
+
+        async function copyAccInfo(code, price, btn) {
+            const formatText = `Mình muốn mua acc Limbus\nMã tài khoản: ${code}\nGiá: ${Number(price).toLocaleString()} VNĐ`;
+            
+            try {
+                await navigator.clipboard.writeText(formatText);
+                const toast = document.getElementById('toast');
+                toast.innerText = `Đã copy thông tin mã ${code}`;
+                toast.style.display = 'block';
+                
+                const originalText = btn.innerText;
+                btn.innerText = "COPIED ✅";
+                btn.style.borderColor = "#fff";
+                
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    btn.innerText = originalText;
+                    btn.style.borderColor = "var(--accent)";
+                }, 2000);
+            } catch (err) { alert("Không thể copy, Cường kiểm tra lại quyền trình duyệt nhé!"); }
         }
 
         function renderGrid(data) {
             const grid = document.getElementById('userGrid');
-            grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; color: #555; padding: 40px 0;">Không tìm thấy kết quả...</p>';
+            grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; color: #666; padding: 50px 0;">Không tìm thấy tài khoản phù hợp...</p>';
             
             data.forEach(p => {
                 const fbLink = `https://www.facebook.com/lcstoregachaverse`;
                 grid.innerHTML += `
                     <div class="card ${p.is_sold ? 'sold-out' : ''}">
-                        ${p.is_sold ? '<div class="sold-stamp">SOLD</div>' : ''}
+                        ${p.is_sold ? '<div class="sold-stamp">SOLD OUT</div>' : ''}
                         <div class="img-box" onclick="${p.is_sold ? '' : `zoom('${p.image_url}')`}">
-                            <img src="${p.image_url}" loading="lazy">
+                            <img src="${p.image_url}" loading="lazy" alt="${p.code}">
                         </div>
                         <div class="card-content">
                             <h2 class="acc-code">[${p.code}]</h2>
-                            <span class="acc-price">${Number(p.price).toLocaleString()}đ</span>
+                            <span class="acc-price">${Number(p.price).toLocaleString()} VNĐ</span>
+                            
+                            ${!p.is_sold ? `
+                                <button class="btn-copy" onclick="event.stopPropagation(); copyAccInfo('${p.code}', '${p.price}', this)">
+                                    SAO CHÉP THÔNG TIN
+                                </button>
+                            ` : ''}
+                            
                             <a href="${p.is_sold ? '#' : fbLink}" target="_blank" class="btn-buy" style="${p.is_sold ? 'background:#333' : ''}">
-                                ${p.is_sold ? 'HẾT HÀNG' : 'MUA NGAY'}
+                                ${p.is_sold ? 'HẾT HÀNG' : 'LIÊN HỆ MUA'}
                             </a>
                         </div>
                     </div>`;
             });
         }
 
-        function zoom(src) { document.getElementById('zoomImg').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+        function zoom(src) { 
+            document.getElementById('zoomImg').src = src; 
+            document.getElementById('lightbox').style.display = 'flex'; 
+        }
         
-        sb.channel('shop-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadShop).subscribe();
+        // --- REAL-TIME LISTENING ---
+        sb.channel('public-shop-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadShop).subscribe();
+        
         loadShop();
     </script>
 </body>
