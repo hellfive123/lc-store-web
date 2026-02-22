@@ -121,7 +121,7 @@
             grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; color: #555;">Không tìm thấy tài khoản nào phù hợp...</p>';
             
             data.forEach(p => {
-                const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse`;
+                const fbLink = `https://www.facebook.com/lcstoregachaverse`;
                 grid.innerHTML += `
                     <div class="card ${p.is_sold ? 'sold-out' : ''}">
                         ${p.is_sold ? '<div class="sold-stamp">SOLD OUT</div>' : ''}
