@@ -190,15 +190,24 @@
         #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border: 1px solid var(--primary); }
 
         /* --- DESKTOP OPTIMIZATION --- */
-        @media (min-width: 768px) {
-            header { height: 55vh; }
-            .filter-bar { padding: 30px; gap: 25px; }
-            .filter-group { min-width: 200px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 35px; }
-            .acc-code { font-size: 2rem; }
-            .acc-price { font-size: 1.6rem; }
-            .btn-buy:hover { background: #fff; color: var(--primary); }
-            .sold-stamp { font-size: 4rem; padding: 15px 40px; }
+		@media (min-width: 768px) {
+			header { height: 50vh; }
+			.filter-bar { padding: 25px; gap: 20px; }
+			.filter-group { min-width: 180px; }
+			
+			/* Giảm minmax từ 320px xuống 240px để card nhỏ lại */
+			.grid { 
+				grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+				gap: 20px; /* Giảm khoảng cách giữa các card một chút */
+			}
+
+			/* Thu nhỏ nội dung bên trong card trên PC */
+			.card-content { padding: 18px; }
+			.acc-code { font-size: 1.5rem; } /* Giảm từ 2rem xuống 1.5rem */
+			.acc-price { font-size: 1.3rem; } /* Giảm từ 1.6rem xuống 1.3rem */
+			
+			.btn-buy { padding: 10px; font-size: 0.9rem; }
+			.sold-stamp { font-size: 2.5rem; padding: 10px 25px; }
         }
     </style>
 </head>
