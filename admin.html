@@ -30,40 +30,52 @@
     </div>
 
     <script>
-        // CƯỜNG THAY THÔNG TIN CỦA CƯỜNG VÀO ĐÂY NHÉ
+        // --- THÔNG TIN KẾT NỐI ---
         const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Đổi tên biến từ 'supabase' thành 'sbClient' để tránh trùng với thư viện
+        const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function uploadAcc() {
             const file = document.getElementById('imgFile').files[0];
             const code = document.getElementById('accCode').value;
             const price = document.getElementById('accPrice').value;
 
-            if(!file || !code || !price) return alert("Nhập đủ đồ đã Cường ơi!");
+            if(!file || !code || !price) return alert("Cường ơi, nhập đủ thông tin đã nhé!");
 
-            // 1. Up ảnh lên Storage
-            const fileName = `${Date.now()}_${file.name}`;
-            const { data: imgData, error: imgErr } = await supabase.storage
-                .from('account-images')
-                .upload(fileName, file);
-            
-            if(imgErr) return alert("Lỗi up ảnh: " + imgErr.message);
+            try {
+                // 1. Up ảnh lên Storage
+                const fileName = `${Date.now()}_${file.name}`;
+                const { data: imgData, error: imgErr } = await sbClient.storage
+                    .from('account-images')
+                    .upload(fileName, file);
+                
+                if(imgErr) throw imgErr;
 
-            // 2. Lấy URL Public
-            const { data: urlData } = supabase.storage.from('account-images').getPublicUrl(fileName);
-            const imgUrl = urlData.publicUrl;
+                // 2. Lấy URL Public
+                const { data: urlData } = sbClient.storage.from('account-images').getPublicUrl(fileName);
+                const imgUrl = urlData.publicUrl;
 
-            // 3. Lưu vào Database
-            const { error: dbErr } = await supabase.from('accounts').insert([{ code, price, image_url: imgUrl }]);
-            
-            if(dbErr) alert("Lỗi lưu database: " + dbErr.message);
-            else { alert("Thành công!"); location.reload(); }
+                // 3. Lưu vào Database
+                const { error: dbErr } = await sbClient.from('accounts').insert([{ code, price, image_url: imgUrl }]);
+                
+                if(dbErr) throw dbErr;
+
+                alert("Up acc thành công rồi!");
+                location.reload();
+            } catch (err) {
+                console.error(err);
+                alert("Có lỗi rồi: " + err.message);
+            }
         }
 
         async function loadAdmin() {
-            const { data } = await supabase.from('accounts').select('*').order('created_at', { ascending: false });
+            const { data, error } = await sbClient.from('accounts').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+            
             const grid = document.getElementById('adminGrid');
+            grid.innerHTML = '';
             data.forEach(item => {
                 grid.innerHTML += `
                     <div class="item">
@@ -76,11 +88,12 @@
         }
 
         async function deleteAcc(id) {
-            if(confirm("Xóa acc này?")) {
-                await supabase.from('accounts').delete().eq('id', id);
+            if(confirm("Xóa vĩnh viễn acc này khỏi kho nhé Cường?")) {
+                await sbClient.from('accounts').delete().eq('id', id);
                 location.reload();
             }
         }
+
         loadAdmin();
     </script>
 </body>
