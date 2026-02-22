@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>LC.Store - Admin Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #c40000; --bg: #0d0d0d; --card: #1a1a1a; --text: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .form-up { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid #333; display: grid; gap: 10px; }
+        input, button { padding: 12px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; }
+        button { background: var(--primary); font-weight: bold; cursor: pointer; border: none; }
+        .list-acc { margin-top: 30px; display: grid; gap: 10px; }
+        .item { display: flex; align-items: center; background: var(--card); padding: 10px; border-radius: 8px; justify-content: space-between; }
+        .item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>LC.STORE - QUẢN LÝ KHO</h2>
+        <div class="form-up">
+            <input type="file" id="imgFile" accept="image/*">
+            <input type="text" id="accCode" placeholder="Mã tài khoản (VD: LC-01)">
+            <input type="number" id="accPrice" placeholder="Giá tiền (VNĐ)">
+            <button onclick="uploadAcc()">XÁC NHẬN UP LÊN CLOUD</button>
+        </div>
+
+        <div class="list-acc" id="adminGrid"></div>
+    </div>
+
+    <script>
+        // CƯỜNG THAY THÔNG TIN CỦA CƯỜNG VÀO ĐÂY NHÉ
+        const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function uploadAcc() {
+            const file = document.getElementById('imgFile').files[0];
+            const code = document.getElementById('accCode').value;
+            const price = document.getElementById('accPrice').value;
+
+            if(!file || !code || !price) return alert("Nhập đủ đồ đã Cường ơi!");
+
+            // 1. Up ảnh lên Storage
+            const fileName = `${Date.now()}_${file.name}`;
+            const { data: imgData, error: imgErr } = await supabase.storage
+                .from('account-images')
+                .upload(fileName, file);
+            
+            if(imgErr) return alert("Lỗi up ảnh: " + imgErr.message);
+
+            // 2. Lấy URL Public
+            const { data: urlData } = supabase.storage.from('account-images').getPublicUrl(fileName);
+            const imgUrl = urlData.publicUrl;
+
+            // 3. Lưu vào Database
+            const { error: dbErr } = await supabase.from('accounts').insert([{ code, price, image_url: imgUrl }]);
+            
+            if(dbErr) alert("Lỗi lưu database: " + dbErr.message);
+            else { alert("Thành công!"); location.reload(); }
+        }
+
+        async function loadAdmin() {
+            const { data } = await supabase.from('accounts').select('*').order('created_at', { ascending: false });
+            const grid = document.getElementById('adminGrid');
+            data.forEach(item => {
+                grid.innerHTML += `
+                    <div class="item">
+                        <img src="${item.image_url}">
+                        <span>[${item.code}] - ${Number(item.price).toLocaleString()}đ</span>
+                        <button onclick="deleteAcc('${item.id}')" style="background:#444; padding:5px">Xóa</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function deleteAcc(id) {
+            if(confirm("Xóa acc này?")) {
+                await supabase.from('accounts').delete().eq('id', id);
+                location.reload();
+            }
+        }
+        loadAdmin();
+    </script>
+</body>
+</html>

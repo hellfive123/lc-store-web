@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC.Store - Limbus Company Starter</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #c40000; --accent: #ffcc00; --bg: #0a0a0a; --card: #161616; --text: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
+        header { text-align: center; padding: 40px 20px; border-bottom: 2px solid var(--primary); }
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .img-box { width: 100%; aspect-ratio: 1/1; cursor: pointer; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .info { padding: 15px; }
+        .price { color: var(--accent); font-size: 1.3em; font-weight: bold; margin: 10px 0; }
+        .btn-buy { display: block; background: var(--primary); color: #fff; text-align: center; padding: 10px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
+        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--primary); }
+    </style>
+</head>
+<body>
+    <header><h1>LC.STORE - LIMBUS STARTER</h1></header>
+    <div class="shop-grid" id="userGrid"></div>
+    <div id="lightbox" onclick="this.style.display='none'"><img id="zoomImg"></div>
+
+    <script>
+        // DÙNG CHUNG THÔNG TIN VỚI FILE ADMIN
+        const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function loadShop() {
+            const { data } = await supabase.from('accounts').select('*').order('created_at', { ascending: false });
+            const grid = document.getElementById('userGrid');
+            data.forEach(p => {
+                const fbLink = `https://www.facebook.com/messages/t/lcstoregachaverse?text=Chào shop, mình muốn mua mã [${p.code}]`;
+                grid.innerHTML += `
+                    <div class="card">
+                        <div class="img-box" onclick="zoom('${p.image_url}')">
+                            <img src="${p.image_url}">
+                        </div>
+                        <div class="info">
+                            <div style="color:#888; font-size:0.8em">Limbus Company Starter</div>
+                            <div style="font-weight:bold; margin:5px 0">[${p.code}]</div>
+                            <div class="price">${Number(p.price).toLocaleString()} VNĐ</div>
+                            <a href="${fbLink}" target="_blank" class="btn-buy">CHỐT ĐƠN</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        function zoom(src) { document.getElementById('zoomImg').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+        loadShop();
+    </script>
+</body>
+</html>
