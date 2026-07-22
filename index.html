@@ -2,344 +2,462 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LC.Store | Limbus Company Premium Shop</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC.Store · Shop acc Limbus Company</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tokens.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
+
     <style>
-        :root { 
-            --primary: #c40000; 
-            --accent: #ffcc00; 
-            --bg: #050505; 
-            --card: #111; 
-            --text: #fff; 
-            --input-bg: #1a1a1a; 
-            --success: #2e7d32;
+        /* Hallmark · genre: atmospheric · macrostructure: catalogue-grid · theme: Midnight-crimson
+         * nav: masthead-compact · footer: Ft2 inline · enrichment: Tier-A CSS glow
+         * pre-emit critique: P4 H4 E4 S4 R4 V5
+         */
+        *, *::before, *::after { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html, body { overflow-x: clip; }
+        body {
+            margin: 0;
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.55;
+            color: var(--color-ink);
+            background: var(--color-paper);
+            -webkit-font-smoothing: antialiased;
         }
-        
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; line-height: 1.5; }
+        h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; }
 
-        /* --- HEADER SECTION --- */
-        header { 
-            height: 45vh; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            background: linear-gradient(rgba(0,0,0,0.7), var(--bg)), url('https://images2.alphacoders.com/131/1313658.png'); 
-            background-size: cover; 
-            background-position: center; 
-            text-align: center; 
-            border-bottom: 3px solid var(--primary); 
-            padding: 0 20px; 
+        /* ---------- Masthead ---------- */
+        .mast {
+            position: relative;
+            padding: var(--space-xl) var(--space-sm) var(--space-lg);
+            text-align: center;
+            overflow: clip;
+            border-bottom: 1px solid var(--color-rule-soft);
         }
-        header h1 { 
-            font-family: 'Bebas Neue', cursive; 
-            font-size: clamp(3.5rem, 12vw, 6rem); 
-            margin: 0; 
-            letter-spacing: 8px; 
-            color: var(--primary); 
-            text-shadow: 0 0 30px rgba(196, 0, 0, 0.6); 
+        .mast::before {
+            content: ""; position: absolute; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 55% at 50% -10%, oklch(30% 0.09 25 / 0.9), transparent 70%),
+                radial-gradient(ellipse 35% 40% at 82% 10%, oklch(24% 0.06 85 / 0.5), transparent 70%),
+                repeating-linear-gradient(90deg, oklch(100% 0 0 / 0.015) 0 1px, transparent 1px 56px);
+            pointer-events: none;
         }
-        header p { 
-            font-weight: bold; 
-            color: var(--accent); 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            font-size: clamp(0.8rem, 2.5vw, 1.1rem); 
-            margin-top: -10px;
+        .mast > * { position: relative; z-index: 1; }
+        .mast__brand {
+            font-size: var(--text-display);
+            font-weight: 800;
+            color: var(--color-ink);
+            line-height: 1.02;
         }
-
-        /* --- FILTER SYSTEM --- */
-        .filter-container { max-width: 1400px; margin: -40px auto 40px; padding: 0 15px; position: relative; z-index: 100; }
-        .filter-bar { 
-            background: #161616; 
-            padding: 20px; 
-            border-radius: 15px; 
-            border: 1px solid #333; 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 15px; 
-            align-items: flex-end; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+        .mast__brand em { font-style: normal; color: var(--color-accent-hot); }
+        .mast__tag {
+            margin: var(--space-2xs) auto 0;
+            color: var(--color-neutral);
+            font-size: var(--text-sm);
+            max-width: 42ch;
         }
-        .filter-group { flex: 1; min-width: calc(50% - 8px); }
-        .filter-group.full-width { min-width: 100%; }
-        
-        label { display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; }
-        input, select { 
-            width: 100%; 
-            background: var(--input-bg); 
-            border: 1px solid #333; 
-            color: #fff; 
-            padding: 12px; 
-            border-radius: 10px; 
-            outline: none; 
-            font-size: 0.95rem; 
-            transition: 0.3s;
+        .mast__stock {
+            display: inline-flex; align-items: center; gap: var(--space-2xs);
+            margin-top: var(--space-sm);
+            padding: 0.35rem 0.9rem;
+            border: 1px solid var(--color-rule);
+            border-radius: var(--radius-chip);
+            background: oklch(17% 0.014 20 / 0.7);
+            font-size: var(--text-sm);
+            color: var(--color-ink-2);
         }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 12px rgba(196, 0, 0, 0.3); }
-
-        /* --- PRODUCT GRID --- */
-        .container { max-width: 1400px; margin: 0 auto 100px; padding: 0 12px; }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); /* 2 cột cố định trên mobile */
-            gap: 15px; 
+        .mast__stock b { font-family: var(--font-display); color: var(--color-ink); }
+        .mast__stock::before {
+            content: ""; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--color-pos);
         }
 
-        /* --- ACCOUNT CARD --- */
-        .card { 
-            background: var(--card); 
-            border-radius: 16px; 
-            overflow: hidden; 
-            border: 1px solid #222; 
-            position: relative; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            display: flex; 
-            flex-direction: column; 
+        /* ---------- Toolbar ---------- */
+        .toolbar-wrap { max-width: 1240px; margin: var(--space-md) auto 0; padding: 0 var(--space-sm); }
+        .toolbar {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+            gap: var(--space-xs);
+            background: var(--color-paper-2);
+            border: 1px solid var(--color-rule-soft);
+            border-radius: var(--radius-card);
+            padding: var(--space-sm);
+            box-shadow: var(--shadow-card);
         }
-        .card:hover { transform: translateY(-8px); border-color: var(--primary); }
-        
-        .img-box { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; cursor: zoom-in; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
-        
-        .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-        .acc-code { font-family: 'Bebas Neue', cursive; font-size: 1.4rem; margin: 0 0 4px; color: #fff; letter-spacing: 1px; }
-        .acc-price { font-size: 1.1rem; color: var(--accent); font-weight: 800; margin-bottom: 15px; display: block; }
-        
-        /* Buttons */
-        .btn-copy { 
-            width: 100%; 
-            background: rgba(255, 204, 0, 0.05); 
-            color: var(--accent); 
-            border: 1px solid var(--accent); 
-            padding: 10px; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            font-size: 0.75rem; 
-            cursor: pointer; 
-            margin-bottom: 10px; 
-            transition: 0.3s; 
+        .field { display: grid; gap: var(--space-3xs); min-width: 0; }
+        .field label {
+            font-size: var(--text-xs); font-weight: 600; color: var(--color-neutral);
+            text-transform: uppercase; letter-spacing: 0.08em;
         }
-        .btn-copy:active { transform: scale(0.95); background: var(--accent); color: #000; }
+        .field input, .field select {
+            width: 100%;
+            font: inherit; font-size: var(--text-sm); color: var(--color-ink);
+            background: var(--color-paper-3);
+            border: 1px solid var(--color-rule);
+            border-radius: var(--radius-input);
+            padding: 0.55rem 0.7rem;
+            transition: border-color var(--dur-short) var(--ease-out);
+        }
+        .field input::placeholder { color: var(--color-neutral); }
+        .field input:hover, .field select:hover { border-color: var(--color-neutral); }
+        .field input:focus-visible, .field select:focus-visible {
+            outline: 2px solid var(--color-focus); outline-offset: 1px;
+            border-color: var(--color-focus);
+        }
+        .field select option { background: var(--color-paper-2); }
 
-        .btn-buy { 
-            width: 100%; 
-            background: var(--primary); 
-            color: white; 
-            text-align: center; 
-            padding: 12px; 
-            text-decoration: none; 
-            border-radius: 8px; 
-            font-weight: 800; 
-            font-size: 0.85rem; 
-            text-transform: uppercase; 
-            margin-top: auto; 
-            transition: 0.3s;
+        /* ---------- Grid ---------- */
+        .shop { max-width: 1240px; margin: var(--space-md) auto var(--space-2xl); padding: 0 var(--space-sm); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+            gap: var(--space-sm);
+        }
+        @media (max-width: 560px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs); } }
+
+        .card {
+            display: flex; flex-direction: column;
+            background: var(--color-paper-2);
+            border: 1px solid var(--color-rule-soft);
+            border-radius: var(--radius-card);
+            overflow: clip;
+            position: relative;
+            transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-med) var(--ease-out);
+        }
+        @media (hover: hover) {
+            .card:not(.is-sold):hover { transform: translateY(-4px); border-color: var(--color-accent); }
+        }
+        .card__img {
+            width: 100%; aspect-ratio: 1 / 1;
+            position: relative; overflow: clip;
+            cursor: zoom-in;
+            background: var(--color-paper-3);
+            border: none; padding: 0; display: block;
+        }
+        .card__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .card__img:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+
+        .badge-new {
+            position: absolute; top: var(--space-2xs); left: var(--space-2xs);
+            font-family: var(--font-display); font-weight: 700; font-size: var(--text-xs);
+            background: var(--color-accent); color: var(--color-accent-ink);
+            padding: 0.15rem 0.55rem;
+            border-radius: var(--radius-chip);
+            letter-spacing: 0.03em;
         }
 
-        /* Status & Effects */
-        .sold-out { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
-        .sold-stamp { 
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%) rotate(-15deg); 
-            border: 4px double var(--primary); 
-            color: var(--primary); 
-            padding: 8px 20px; 
-            font-family: 'Bebas Neue'; 
-            font-size: 2rem; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 10; 
-            border-radius: 10px; 
+        .card__body { padding: var(--space-xs) var(--space-xs) var(--space-sm); display: flex; flex-direction: column; gap: var(--space-2xs); flex: 1; }
+        .card__code {
+            font-family: var(--font-mono); font-weight: 600;
+            font-size: var(--text-sm); color: var(--color-ink-2);
+            letter-spacing: 0.02em;
+            overflow-wrap: anywhere;
+        }
+        .card__price {
+            font-family: var(--font-display); font-weight: 800;
+            font-size: var(--text-lg); color: var(--color-gold);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+        }
+        .card__actions { display: grid; gap: var(--space-3xs); margin-top: auto; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: var(--space-3xs);
+            font: inherit; font-weight: 600; font-size: var(--text-sm);
+            border-radius: var(--radius-btn);
+            border: 1px solid transparent;
+            padding: 0.55rem 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background var(--dur-short) var(--ease-out),
+                        border-color var(--dur-short) var(--ease-out),
+                        transform var(--dur-short) var(--ease-out);
+        }
+        .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+        .btn:active { transform: translateY(1px); }
+        .btn--buy { background: var(--color-accent); color: var(--color-accent-ink); }
+        .btn--buy:hover { background: var(--color-accent-hot); }
+        .btn--copy { background: transparent; color: var(--color-ink-2); border-color: var(--color-rule); }
+        .btn--copy:hover { background: var(--color-paper-3); border-color: var(--color-neutral); }
+        .btn--copy.is-done { color: var(--color-pos); border-color: var(--color-pos); }
+
+        /* Sold */
+        .card.is-sold .card__img { cursor: default; }
+        .card.is-sold img { filter: grayscale(1) brightness(0.55); }
+        .card.is-sold .card__price { color: var(--color-neutral); }
+        .sold-stamp {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-12deg);
+            font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg);
+            color: var(--color-accent-hot);
+            border: 3px double var(--color-accent-hot);
+            border-radius: var(--radius-input);
+            padding: 0.2rem 0.8rem;
+            background: oklch(10% 0.01 20 / 0.85);
+            letter-spacing: 0.06em;
+            white-space: nowrap;
         }
 
-        /* Notifications & Lightbox */
-        #toast { 
-            position: fixed; 
-            bottom: 30px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: var(--success); 
-            color: white; 
-            padding: 12px 25px; 
-            border-radius: 50px; 
-            font-weight: bold; 
-            display: none; 
-            z-index: 9999; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        /* ---------- Skeleton ---------- */
+        .skel { border-radius: var(--radius-card); overflow: clip; border: 1px solid var(--color-rule-soft); }
+        .skel__img { aspect-ratio: 1/1; }
+        .skel__line { height: 14px; margin: var(--space-2xs) var(--space-xs); border-radius: 4px; }
+        .skel__line--short { width: 45%; }
+        .skel__img, .skel__line {
+            background: linear-gradient(100deg, var(--color-paper-2) 40%, var(--color-paper-3) 50%, var(--color-paper-2) 60%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite linear;
         }
-        #lightbox { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.98); 
-            z-index: 10000; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 15px; 
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        .empty {
+            grid-column: 1 / -1;
+            text-align: center; color: var(--color-neutral);
+            padding: var(--space-xl) var(--space-sm);
         }
-        #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border: 1px solid var(--primary); }
 
-        /* --- DESKTOP OPTIMIZATION --- */
-		@media (min-width: 768px) {
-			header { height: 50vh; }
-			.filter-bar { padding: 25px; gap: 20px; }
-			.filter-group { min-width: 180px; }
-			
-			/* Giảm minmax từ 320px xuống 240px để card nhỏ lại */
-			.grid { 
-				grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
-				gap: 20px; /* Giảm khoảng cách giữa các card một chút */
-			}
+        /* ---------- Lightbox ---------- */
+        .lightbox {
+            position: fixed; inset: 0; z-index: 100;
+            background: oklch(8% 0.008 20 / 0.96);
+            display: none;
+            justify-content: center; align-items: center;
+            padding: var(--space-sm);
+            cursor: zoom-out;
+        }
+        .lightbox.is-open { display: flex; }
+        .lightbox img {
+            max-width: 100%; max-height: 100%;
+            border-radius: var(--radius-input);
+            border: 1px solid var(--color-rule);
+        }
 
-			/* Thu nhỏ nội dung bên trong card trên PC */
-			.card-content { padding: 18px; }
-			.acc-code { font-size: 1.5rem; } /* Giảm từ 2rem xuống 1.5rem */
-			.acc-price { font-size: 1.3rem; } /* Giảm từ 1.6rem xuống 1.3rem */
-			
-			.btn-buy { padding: 10px; font-size: 0.9rem; }
-			.sold-stamp { font-size: 2.5rem; padding: 10px 25px; }
+        /* ---------- Toast ---------- */
+        .toasts {
+            position: fixed; bottom: var(--space-sm); left: 50%; transform: translateX(-50%);
+            z-index: 120; display: grid; gap: var(--space-3xs); width: min(92vw, 360px);
+        }
+        .toast {
+            display: flex; align-items: center; gap: var(--space-2xs);
+            background: var(--color-paper-3);
+            border: 1px solid var(--color-rule);
+            color: var(--color-ink);
+            border-radius: var(--radius-card);
+            padding: var(--space-2xs) var(--space-sm);
+            font-size: var(--text-sm);
+            box-shadow: var(--shadow-pop);
+            animation: rise var(--dur-med) var(--ease-out);
+        }
+        .toast::before { content: "✓"; color: var(--color-pos); font-weight: 700; }
+        .toast--error::before { content: "!"; color: var(--color-accent-hot); }
+        .toast.is-leaving { opacity: 0; transition: opacity var(--dur-med) var(--ease-out); }
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        /* ---------- Footer ---------- */
+        .footer {
+            max-width: 1240px; margin: 0 auto;
+            padding: var(--space-sm);
+            border-top: 1px solid var(--color-rule-soft);
+            display: flex; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap;
+            font-size: var(--text-xs); color: var(--color-neutral);
+        }
+        .footer a { color: var(--color-ink-2); text-decoration: none; border-bottom: 1px solid var(--color-rule); }
+        .footer a:hover { color: var(--color-accent-hot); border-color: var(--color-accent-hot); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>LC.STORE</h1>
-        <p>Premium Limbus Company Account Warehouse</p>
-    </header>
+<header class="mast">
+    <h1 class="mast__brand">LC<em>.</em>STORE</h1>
+    <p class="mast__tag">Kho acc Limbus Company tuyển chọn — giao dịch qua Fanpage, uy tín từng đơn.</p>
+    <p class="mast__stock" id="stockPill"><b id="stockCount">…</b>&nbsp;acc đang còn hàng</p>
+</header>
 
-    <div class="filter-container">
-        <div class="filter-bar">
-            <div class="filter-group full-width">
-                <label>🔍 Tìm kiếm mã số</label>
-                <input type="text" id="searchCode" placeholder="Nhập mã cần tìm (VD: LC-01)..." oninput="applyFilters()">
-            </div>
-            <div class="filter-group">
-                <label>💰 Giá tối đa (VNĐ)</label>
-                <input type="number" id="maxPrice" placeholder="VD: 500000" oninput="applyFilters()">
-            </div>
-            <div class="filter-group">
-                <label>🛡️ Trạng thái kho</label>
-                <select id="statusFilter" onchange="applyFilters()">
-                    <option value="all">Tất cả sản phẩm</option>
-                    <option value="available" selected>Đang còn hàng</option>
-                    <option value="sold">Đã bán (Sold Out)</option>
-                </select>
-            </div>
+<div class="toolbar-wrap">
+    <div class="toolbar">
+        <div class="field">
+            <label for="searchCode">Tìm mã acc</label>
+            <input type="search" id="searchCode" placeholder="VD: LC-01">
+        </div>
+        <div class="field">
+            <label for="maxPrice">Giá tối đa</label>
+            <input type="number" id="maxPrice" inputmode="numeric" min="0" placeholder="500000">
+        </div>
+        <div class="field">
+            <label for="statusFilter">Trạng thái</label>
+            <select id="statusFilter">
+                <option value="available" selected>Còn hàng</option>
+                <option value="sold">Đã bán</option>
+                <option value="all">Tất cả</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="sortBy">Sắp xếp</label>
+            <select id="sortBy">
+                <option value="newest" selected>Mới nhất</option>
+                <option value="price-asc">Giá thấp → cao</option>
+                <option value="price-desc">Giá cao → thấp</option>
+            </select>
         </div>
     </div>
+</div>
 
-    <div class="container">
-        <div class="grid" id="userGrid"></div>
-    </div>
+<main class="shop">
+    <div class="grid" id="userGrid"></div>
+</main>
 
-    <div id="lightbox" onclick="this.style.display='none'"><img id="zoomImg"></div>
-    <div id="toast">Đã copy thông tin!</div>
+<footer class="footer">
+    <span>© LC.Store — shop acc Limbus Company</span>
+    <a href="https://www.facebook.com/lcstoregachaverse" target="_blank" rel="noopener">Fanpage Facebook</a>
+</footer>
 
-    <script>
-        const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Xem ảnh phóng to"><img id="zoomImg" alt=""></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
-        let allAccounts = [];
+<script>
+'use strict';
 
-        async function loadShop() {
-            const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
-            if (error) return console.error("Lỗi lấy dữ liệu:", error);
-            
-            allAccounts = data;
-            applyFilters();
+const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
+const FB_LINK = 'https://www.facebook.com/lcstoregachaverse';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const fmtPrice = (n) => Number(n || 0).toLocaleString('vi-VN') + ' ₫';
+const NEW_DAYS = 7;
+
+let allAccounts = [];
+let loaded = false;
+
+function toast(msg, type = 'ok') {
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'error' ? ' toast--error' : '');
+    el.textContent = msg;
+    $('toasts').appendChild(el);
+    setTimeout(() => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 320); }, 2400);
+}
+
+function renderSkeleton() {
+    $('userGrid').innerHTML = Array.from({ length: 8 }, () => `
+        <div class="skel">
+            <div class="skel__img"></div>
+            <div class="skel__line"></div>
+            <div class="skel__line skel__line--short"></div>
+        </div>`).join('');
+}
+
+async function loadShop() {
+    if (!loaded) renderSkeleton();
+    const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
+    if (error) {
+        $('userGrid').innerHTML = '<p class="empty">Không tải được dữ liệu, thử tải lại trang nhé.</p>';
+        console.error(error);
+        return;
+    }
+    allAccounts = data || [];
+    loaded = true;
+    applyFilters();
+}
+
+function applyFilters() {
+    const q = $('searchCode').value.trim().toLowerCase();
+    const maxPrice = parseFloat($('maxPrice').value) || Infinity;
+    const status = $('statusFilter').value;
+    const sort = $('sortBy').value;
+
+    let list = allAccounts.filter(p =>
+        String(p.code || '').toLowerCase().includes(q) &&
+        Number(p.price) <= maxPrice &&
+        (status === 'all' ? true : status === 'available' ? !p.is_sold : p.is_sold)
+    );
+
+    if (sort === 'price-asc')  list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
+    // 'newest' giữ nguyên thứ tự created_at desc từ query
+
+    $('stockCount').textContent = allAccounts.filter(p => !p.is_sold).length;
+    renderGrid(list);
+}
+
+function isNew(p) {
+    return !p.is_sold && (Date.now() - new Date(p.created_at).getTime()) < NEW_DAYS * 864e5;
+}
+
+function renderGrid(list) {
+    const grid = $('userGrid');
+    if (!list.length) {
+        grid.innerHTML = '<p class="empty">Không tìm thấy acc phù hợp bộ lọc.</p>';
+        return;
+    }
+    grid.innerHTML = list.map(p => `
+        <article class="card ${p.is_sold ? 'is-sold' : ''}" data-id="${Number(p.id)}">
+            ${p.is_sold ? '<div class="sold-stamp">SOLD OUT</div>' : isNew(p) ? '<span class="badge-new">Mới về</span>' : ''}
+            <button class="card__img" type="button" data-act="zoom" ${p.is_sold ? 'disabled' : ''} aria-label="Xem ảnh acc ${esc(p.code)}">
+                <img src="${esc(p.image_url)}" loading="lazy" alt="Acc ${esc(p.code)}">
+            </button>
+            <div class="card__body">
+                <span class="card__code">[${esc(p.code)}]</span>
+                <span class="card__price">${fmtPrice(p.price)}</span>
+                <div class="card__actions">
+                    ${p.is_sold ? '' : `<button class="btn btn--copy" type="button" data-act="copy">Sao chép thông tin</button>`}
+                    ${p.is_sold
+                        ? '<span class="btn" style="background:var(--color-paper-3); color:var(--color-neutral); cursor:default">Hết hàng</span>'
+                        : `<a class="btn btn--buy" href="${FB_LINK}" target="_blank" rel="noopener">Liên hệ mua</a>`}
+                </div>
+            </div>
+        </article>`).join('');
+}
+
+/* Event delegation */
+$('userGrid').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const card = btn.closest('.card');
+    const p = allAccounts.find(x => Number(x.id) === Number(card.dataset.id));
+    if (!p) return;
+
+    if (btn.dataset.act === 'zoom' && !p.is_sold) {
+        $('zoomImg').src = p.image_url;
+        $('lightbox').classList.add('is-open');
+    }
+    if (btn.dataset.act === 'copy') {
+        const text = `Mình muốn mua acc Limbus\nMã tài khoản: ${p.code}\nGiá: ${fmtPrice(p.price)}`;
+        try {
+            await navigator.clipboard.writeText(text);
+            btn.classList.add('is-done');
+            btn.textContent = 'Đã sao chép ✓';
+            toast('Đã copy thông tin mã ' + p.code + ' — dán vào tin nhắn Fanpage nhé!');
+            setTimeout(() => { btn.classList.remove('is-done'); btn.textContent = 'Sao chép thông tin'; }, 2000);
+        } catch {
+            toast('Trình duyệt chặn copy, hãy chụp màn hình gửi shop nhé.', 'error');
         }
+    }
+});
 
-        function applyFilters() {
-            const searchQuery = document.getElementById('searchCode').value.toLowerCase();
-            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-            const statusFilter = document.getElementById('statusFilter').value;
+$('lightbox').addEventListener('click', () => $('lightbox').classList.remove('is-open'));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('lightbox').classList.remove('is-open'); });
 
-            const filtered = allAccounts.filter(p => {
-                const matchCode = p.code.toLowerCase().includes(searchQuery);
-                const matchPrice = p.price <= maxPrice;
-                const matchStatus = 
-                    statusFilter === 'all' ? true : 
-                    statusFilter === 'available' ? !p.is_sold : 
-                    p.is_sold;
+['searchCode', 'maxPrice'].forEach(id => $(id).addEventListener('input', applyFilters));
+['statusFilter', 'sortBy'].forEach(id => $(id).addEventListener('change', applyFilters));
 
-                return matchCode && matchPrice && matchStatus;
-            });
+/* Real-time: admin đăng/bán acc là trang khách tự cập nhật */
+sb.channel('public-shop-updates')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadShop)
+  .subscribe();
 
-            renderGrid(filtered);
-        }
-
-        async function copyAccInfo(code, price, btn) {
-            const formatText = `Mình muốn mua acc Limbus\nMã tài khoản: ${code}\nGiá: ${Number(price).toLocaleString()} VNĐ`;
-            
-            try {
-                await navigator.clipboard.writeText(formatText);
-                const toast = document.getElementById('toast');
-                toast.innerText = `Đã copy thông tin mã ${code}`;
-                toast.style.display = 'block';
-                
-                const originalText = btn.innerText;
-                btn.innerText = "COPIED ✅";
-                btn.style.borderColor = "#fff";
-                
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                    btn.innerText = originalText;
-                    btn.style.borderColor = "var(--accent)";
-                }, 2000);
-            } catch (err) { alert("Không thể copy, Cường kiểm tra lại quyền trình duyệt nhé!"); }
-        }
-
-        function renderGrid(data) {
-            const grid = document.getElementById('userGrid');
-            grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; color: #666; padding: 50px 0;">Không tìm thấy tài khoản phù hợp...</p>';
-            
-            data.forEach(p => {
-                const fbLink = `https://www.facebook.com/lcstoregachaverse`;
-                grid.innerHTML += `
-                    <div class="card ${p.is_sold ? 'sold-out' : ''}">
-                        ${p.is_sold ? '<div class="sold-stamp">SOLD OUT</div>' : ''}
-                        <div class="img-box" onclick="${p.is_sold ? '' : `zoom('${p.image_url}')`}">
-                            <img src="${p.image_url}" loading="lazy" alt="${p.code}">
-                        </div>
-                        <div class="card-content">
-                            <h2 class="acc-code">[${p.code}]</h2>
-                            <span class="acc-price">${Number(p.price).toLocaleString()} VNĐ</span>
-                            
-                            ${!p.is_sold ? `
-                                <button class="btn-copy" onclick="event.stopPropagation(); copyAccInfo('${p.code}', '${p.price}', this)">
-                                    SAO CHÉP THÔNG TIN
-                                </button>
-                            ` : ''}
-                            
-                            <a href="${p.is_sold ? '#' : fbLink}" target="_blank" class="btn-buy" style="${p.is_sold ? 'background:#333' : ''}">
-                                ${p.is_sold ? 'HẾT HÀNG' : 'LIÊN HỆ MUA'}
-                            </a>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function zoom(src) { 
-            document.getElementById('zoomImg').src = src; 
-            document.getElementById('lightbox').style.display = 'flex'; 
-        }
-        
-        // --- REAL-TIME LISTENING ---
-        sb.channel('public-shop-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadShop).subscribe();
-        
-        loadShop();
-    </script>
+loadShop();
+</script>
 </body>
 </html>

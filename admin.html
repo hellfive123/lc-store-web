@@ -3,195 +3,564 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC.Store | Admin Pro Dashboard</title>
+    <title>LC.Store · Quản trị kho</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tokens.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        :root { --primary: #8c0000; --accent: #ffcc00; --bg: #0a0a0a; --card: #151515; --text: #e0e0e0; --success: #2e7d32; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
-        
-        /* --- GIAO DIỆN LOGIN --- */
-        #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .login-card { background: var(--card); padding: 40px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .logo-login { font-family: 'Bebas Neue', cursive; font-size: 3.5rem; color: var(--primary); letter-spacing: 5px; margin-bottom: 10px; }
-        
-        /* --- GIAO DIỆN DASHBOARD --- */
-        #admin-dashboard { display: none; }
-        .sidebar { width: 260px; background: #000; border-right: 1px solid #333; padding: 30px; position: fixed; height: 100vh; display: flex; flex-direction: column; }
-        .main-content { margin-left: 260px; padding: 40px; }
+        /* Hallmark · genre: atmospheric · theme: Midnight-crimson · page: admin (app-scope) */
+        *, *::before, *::after { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html, body { overflow-x: clip; }
+        body {
+            margin: 0;
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.55;
+            color: var(--color-ink);
+            background: var(--color-paper);
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; }
 
-        /* UI Elements */
-        input, button { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); }
-        .btn-primary { background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
-        .btn-primary:hover:not(:disabled) { background: #b30000; transform: translateY(-2px); }
-        .btn-primary:disabled { background: #555; cursor: not-allowed; }
+        /* ---------- Login ---------- */
+        .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: var(--space-sm); }
+        .login-card {
+            width: min(100%, 380px);
+            background: var(--color-paper-2);
+            border: 1px solid var(--color-rule-soft);
+            border-radius: var(--radius-card);
+            padding: var(--space-lg) var(--space-md);
+            box-shadow: var(--shadow-pop);
+            display: grid; gap: var(--space-xs);
+            text-align: center;
+        }
+        .login-card h1 { font-size: var(--text-2xl); font-weight: 800; }
+        .login-card h1 em { font-style: normal; color: var(--color-accent-hot); }
+        .login-card p { margin: 0 0 var(--space-xs); color: var(--color-neutral); font-size: var(--text-sm); }
 
-        .upload-panel { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #333; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .full-row { grid-column: span 2; }
+        /* ---------- Controls ---------- */
+        .field { display: grid; gap: var(--space-3xs); text-align: left; min-width: 0; }
+        .field label {
+            font-size: var(--text-xs); font-weight: 600; color: var(--color-neutral);
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .field input, .field select {
+            width: 100%; font: inherit; font-size: var(--text-sm); color: var(--color-ink);
+            background: var(--color-paper-3);
+            border: 1px solid var(--color-rule);
+            border-radius: var(--radius-input);
+            padding: 0.55rem 0.7rem;
+            transition: border-color var(--dur-short) var(--ease-out);
+        }
+        .field input:hover { border-color: var(--color-neutral); }
+        .field input:focus-visible, .field select:focus-visible {
+            outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus);
+        }
+        .field input[type="file"] { padding: 0.4rem; }
+        .field input::file-selector-button {
+            font: inherit; font-size: var(--text-xs); font-weight: 600;
+            background: var(--color-paper); color: var(--color-ink-2);
+            border: 1px solid var(--color-rule); border-radius: 6px;
+            padding: 0.3rem 0.6rem; margin-right: 0.6rem; cursor: pointer;
+        }
 
-        .inventory-grid { display: grid; gap: 15px; }
-        .acc-item { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #222; display: flex; align-items: center; gap: 20px; }
-        .acc-item img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; }
-        .acc-info { flex: 1; }
-        .acc-info b { font-size: 1.1rem; display: block; }
-        .tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-left: 5px; }
-        .tag-sold { background: var(--primary); }
-        .tag-active { background: var(--success); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: var(--space-3xs);
+            font: inherit; font-weight: 600; font-size: var(--text-sm);
+            border-radius: var(--radius-btn); border: 1px solid transparent;
+            padding: 0.55rem 0.9rem; cursor: pointer; white-space: nowrap;
+            transition: background var(--dur-short) var(--ease-out),
+                        border-color var(--dur-short) var(--ease-out),
+                        transform var(--dur-short) var(--ease-out);
+        }
+        .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .btn--primary { background: var(--color-accent); color: var(--color-accent-ink); }
+        .btn--primary:hover:not(:disabled) { background: var(--color-accent-hot); }
+        .btn--ghost { background: transparent; color: var(--color-ink-2); border-color: var(--color-rule); }
+        .btn--ghost:hover:not(:disabled) { background: var(--color-paper-3); }
+        .btn--sm { padding: 0.32rem 0.6rem; font-size: var(--text-xs); }
+        .btn--danger-ghost { background: transparent; color: var(--color-accent-hot); border-color: transparent; }
+        .btn--danger-ghost:hover:not(:disabled) { background: var(--color-accent-soft); }
 
-        .btn-logout { background: transparent; border: 1px solid #444; color: #888; margin-top: auto; }
-        .btn-logout:hover { color: #fff; border-color: #fff; }
+        /* ---------- Dashboard ---------- */
+        .topbar {
+            position: sticky; top: 0; z-index: 40;
+            background: oklch(17% 0.014 20 / 0.9);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--color-rule-soft);
+        }
+        .topbar__inner {
+            max-width: 1100px; margin: 0 auto; padding: 0 var(--space-sm);
+            height: 58px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+        }
+        .topbar h1 { font-size: var(--text-md); font-weight: 800; }
+        .topbar h1 em { font-style: normal; color: var(--color-accent-hot); }
+        .topbar small { color: var(--color-pos); font-size: var(--text-xs); display: block; font-family: var(--font-body); font-weight: 400; }
 
-        @media (max-width: 900px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-left: 0; padding: 20px; }
-            .upload-panel { grid-template-columns: 1fr; }
+        .shell { max-width: 1100px; margin: 0 auto; padding: var(--space-md) var(--space-sm) var(--space-xl); display: grid; gap: var(--space-md); }
+
+        .stats { display: grid; gap: var(--space-xs); grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); }
+        .stat {
+            background: var(--color-paper-2);
+            border: 1px solid var(--color-rule-soft);
+            border-radius: var(--radius-card);
+            padding: var(--space-xs) var(--space-sm);
+        }
+        .stat__label { font-size: var(--text-xs); font-weight: 600; color: var(--color-neutral); text-transform: uppercase; letter-spacing: 0.08em; }
+        .stat__value { font-family: var(--font-display); font-weight: 800; font-size: var(--text-xl); font-variant-numeric: tabular-nums; margin-top: 2px; }
+        .stat__sub { font-size: var(--text-xs); color: var(--color-neutral); }
+        .stat--gold .stat__value { color: var(--color-gold); }
+        .stat--red .stat__value { color: var(--color-accent-hot); }
+
+        .card {
+            background: var(--color-paper-2);
+            border: 1px solid var(--color-rule-soft);
+            border-radius: var(--radius-card);
+        }
+        .card__head {
+            display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs);
+            padding: var(--space-xs) var(--space-sm);
+            border-bottom: 1px solid var(--color-rule-soft);
+            flex-wrap: wrap;
+        }
+        .card__title { font-size: var(--text-sm); font-weight: 700; }
+        .card__body { padding: var(--space-sm); }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs); }
+        .form-grid .full { grid-column: 1 / -1; }
+        @media (max-width: 560px) { .form-grid { grid-template-columns: minmax(0, 1fr); } }
+        .form-note { font-size: var(--text-xs); color: var(--color-neutral); margin: var(--space-3xs) 0 0; }
+
+        /* Toolbar kho */
+        .toolbar { display: flex; align-items: center; gap: var(--space-2xs); flex-wrap: wrap; padding: var(--space-xs) var(--space-sm); border-bottom: 1px solid var(--color-rule-soft); }
+        .search {
+            flex: 1 1 170px; display: flex; align-items: center; gap: var(--space-3xs);
+            background: var(--color-paper-3); border: 1px solid var(--color-rule);
+            border-radius: var(--radius-input); padding: 0.35rem 0.55rem;
+        }
+        .search:focus-within { border-color: var(--color-focus); }
+        .search input { border: none; outline: none; background: transparent; font: inherit; font-size: var(--text-sm); color: var(--color-ink); width: 100%; min-width: 0; }
+        .chips { display: flex; gap: var(--space-3xs); }
+        .chip {
+            font: inherit; font-size: var(--text-xs); font-weight: 600; color: var(--color-neutral);
+            background: transparent; border: 1px solid var(--color-rule);
+            border-radius: var(--radius-chip); padding: 0.26rem 0.65rem; cursor: pointer;
+            transition: background var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+        }
+        .chip:hover { background: var(--color-paper-3); }
+        .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+        .chip.is-active { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+
+        /* Inventory */
+        .inv { display: grid; gap: var(--space-2xs); padding: var(--space-sm); }
+        .inv-item {
+            display: flex; align-items: center; gap: var(--space-xs);
+            background: var(--color-paper-3);
+            border: 1px solid var(--color-rule-soft);
+            border-radius: var(--radius-input);
+            padding: var(--space-2xs) var(--space-xs);
+            flex-wrap: wrap;
+        }
+        .inv-item.is-sold { opacity: 0.65; }
+        .inv-item img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; flex: none; }
+        .inv-info { flex: 1; min-width: 140px; }
+        .inv-info .code { font-family: var(--font-mono); font-weight: 600; font-size: var(--text-sm); overflow-wrap: anywhere; }
+        .inv-info .price { color: var(--color-gold); font-weight: 600; font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+        .tag {
+            font-size: 0.6875rem; font-weight: 700; padding: 0.08rem 0.5rem;
+            border-radius: var(--radius-chip); margin-left: var(--space-3xs); white-space: nowrap;
+        }
+        .tag--on { background: oklch(30% 0.06 150 / 0.6); color: var(--color-pos); }
+        .tag--off { background: var(--color-accent-soft); color: var(--color-accent-hot); }
+        .inv-actions { display: flex; gap: var(--space-3xs); margin-left: auto; }
+
+        .empty { text-align: center; color: var(--color-neutral); padding: var(--space-lg); font-size: var(--text-sm); }
+
+        /* Toast + modal */
+        .toasts { position: fixed; bottom: var(--space-sm); left: 50%; transform: translateX(-50%); z-index: 120; display: grid; gap: var(--space-3xs); width: min(92vw, 360px); }
+        .toast {
+            display: flex; align-items: center; gap: var(--space-2xs);
+            background: var(--color-paper-3); border: 1px solid var(--color-rule); color: var(--color-ink);
+            border-radius: var(--radius-card); padding: var(--space-2xs) var(--space-sm);
+            font-size: var(--text-sm); box-shadow: var(--shadow-pop);
+            animation: rise var(--dur-med) var(--ease-out);
+        }
+        .toast::before { content: "✓"; color: var(--color-pos); font-weight: 700; }
+        .toast--error::before { content: "!"; color: var(--color-accent-hot); }
+        .toast.is-leaving { opacity: 0; transition: opacity var(--dur-med) var(--ease-out); }
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        .modal-backdrop { position: fixed; inset: 0; z-index: 110; background: oklch(8% 0.008 20 / 0.7); display: grid; place-items: center; padding: var(--space-sm); }
+        .modal {
+            width: min(100%, 400px); background: var(--color-paper-2);
+            border: 1px solid var(--color-rule); border-radius: var(--radius-card);
+            box-shadow: var(--shadow-pop); padding: var(--space-sm);
+            animation: rise var(--dur-med) var(--ease-out);
+        }
+        .modal h3 { font-size: var(--text-md); margin-bottom: var(--space-3xs); }
+        .modal p { margin: 0 0 var(--space-sm); color: var(--color-ink-2); font-size: var(--text-sm); white-space: pre-line; }
+        .modal__actions { display: flex; justify-content: flex-end; gap: var(--space-2xs); }
+        .btn--danger { background: var(--color-accent); color: var(--color-accent-ink); }
+        .btn--danger:hover:not(:disabled) { background: var(--color-accent-hot); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="login-container">
-        <div class="login-card">
-            <div class="logo-login">LC.STORE</div>
-            <p style="color: #666; margin-bottom: 30px;">HỆ THỐNG QUẢN TRỊ NỘI BỘ</p>
-            <input type="email" id="email" placeholder="Email Admin" style="width: 100%; margin-bottom: 15px;">
-            <input type="password" id="password" placeholder="Mật khẩu" style="width: 100%; margin-bottom: 25px;">
-            <button class="btn-primary" onclick="handleLogin()" style="width: 100%;">TRUY CẬP HỆ THỐNG</button>
+<!-- Đăng nhập -->
+<div class="login-wrap" id="loginView">
+    <form class="login-card" id="loginForm">
+        <h1>LC<em>.</em>STORE</h1>
+        <p>Hệ thống quản trị kho nội bộ</p>
+        <div class="field">
+            <label for="email">Email admin</label>
+            <input type="email" id="email" autocomplete="username" required>
         </div>
-    </div>
-
-    <div id="admin-dashboard">
-        <div class="sidebar">
-            <div class="logo-login" style="font-size: 2.5rem;">LC.STORE</div>
-            <p style="color: var(--success); font-size: 0.8rem;">● ADMIN SESSION ACTIVE</p>
-            <button class="btn-logout" onclick="handleLogout()">Đăng xuất tài khoản</button>
+        <div class="field">
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" autocomplete="current-password" required>
         </div>
+        <button class="btn btn--primary" id="btnLogin" type="submit">Truy cập hệ thống</button>
+    </form>
+</div>
 
-        <div class="main-content">
-            <div class="upload-panel">
-                <div class="full-row" style="color: var(--primary); font-weight: bold; border-left: 3px solid var(--primary); padding-left: 10px;">THÊM SẢN PHẨM MỚI</div>
-                <div>
-                    <label style="display:block; font-size:0.8rem; color:#888; margin-bottom:5px;">ẢNH TÀI KHOẢN</label>
-                    <input type="file" id="imgFile" accept="image/*" style="width: 100%;">
-                </div>
-                <div>
-                    <label style="display:block; font-size:0.8rem; color:#888; margin-bottom:5px;">MÃ TÀI KHOẢN (CODE)</label>
-                    <input type="text" id="accCode" placeholder="Ví dụ: LC-99">
-                </div>
-                <div>
-                    <label style="display:block; font-size:0.8rem; color:#888; margin-bottom:5px;">GIÁ BÁN (VNĐ)</label>
-                    <input type="number" id="accPrice" placeholder="Ví dụ: 150000">
-                </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button class="btn-primary" onclick="uploadAcc()" id="btnUpload" style="width: 100%;">XÁC NHẬN UP CLOUD</button>
+<!-- Dashboard -->
+<div id="adminView" hidden>
+    <header class="topbar">
+        <div class="topbar__inner">
+            <h1>LC<em>.</em>STORE <small>● phiên admin đang hoạt động</small></h1>
+            <button class="btn btn--ghost btn--sm" id="btnLogout" type="button">Đăng xuất</button>
+        </div>
+    </header>
+
+    <main class="shell">
+
+        <section class="stats" aria-label="Thống kê kho">
+            <div class="stat">
+                <p class="stat__label">Còn hàng</p>
+                <p class="stat__value" id="statOnCount">0</p>
+                <p class="stat__sub">acc đang rao bán</p>
+            </div>
+            <div class="stat stat--gold">
+                <p class="stat__label">Giá trị kho</p>
+                <p class="stat__value" id="statOnValue">0 ₫</p>
+                <p class="stat__sub">tổng giá acc còn hàng</p>
+            </div>
+            <div class="stat stat--red">
+                <p class="stat__label">Đã bán</p>
+                <p class="stat__value" id="statSoldCount">0</p>
+                <p class="stat__sub">acc đã chốt đơn</p>
+            </div>
+            <div class="stat stat--gold">
+                <p class="stat__label">Doanh thu đã bán</p>
+                <p class="stat__value" id="statSoldValue">0 ₫</p>
+                <p class="stat__sub">tổng giá acc đã bán</p>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="formTitle">
+            <div class="card__head">
+                <h2 class="card__title" id="formTitle">Thêm acc mới</h2>
+                <button class="btn btn--danger-ghost btn--sm" id="btnCancelEdit" type="button" hidden>Hủy sửa</button>
+            </div>
+            <div class="card__body">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="accCode">Mã acc</label>
+                        <input type="text" id="accCode" placeholder="VD: LC-99" maxlength="60">
+                    </div>
+                    <div class="field">
+                        <label for="accPrice">Giá bán (VNĐ)</label>
+                        <input type="number" id="accPrice" inputmode="numeric" min="0" placeholder="150000">
+                    </div>
+                    <div class="field full">
+                        <label for="imgFile">Ảnh acc</label>
+                        <input type="file" id="imgFile" accept="image/*">
+                        <p class="form-note" id="imgNote">Chọn ảnh chụp acc (bắt buộc khi thêm mới).</p>
+                    </div>
+                    <button class="btn btn--primary full" id="btnSave" type="button">Đăng acc lên shop</button>
                 </div>
             </div>
+        </section>
 
-            <div class="inventory-grid" id="adminGrid">
-                <p style="text-align: center; color: #555;">Đang đồng bộ dữ liệu Real-time...</p>
+        <section class="card" aria-labelledby="invTitle">
+            <div class="card__head">
+                <h2 class="card__title" id="invTitle">Kho acc</h2>
+                <span class="form-note" id="invCount"></span>
             </div>
-        </div>
-    </div>
+            <div class="toolbar">
+                <div class="search">
+                    <input type="search" id="invSearch" placeholder="Tìm theo mã…" aria-label="Tìm trong kho">
+                </div>
+                <div class="chips" role="group" aria-label="Lọc trạng thái kho">
+                    <button class="chip is-active" data-filter="all" type="button">Tất cả</button>
+                    <button class="chip" data-filter="available" type="button">Còn hàng</button>
+                    <button class="chip" data-filter="sold" type="button">Đã bán</button>
+                </div>
+            </div>
+            <div class="inv" id="invList"><p class="empty">Đang đồng bộ dữ liệu…</p></div>
+        </section>
+    </main>
+</div>
 
-    <script>
-        const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); //
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
 
-        // --- HỆ THỐNG AUTH ---
-        async function checkSession() {
-            const { data: { session } } = await sb.auth.getSession();
-            if (session) showAdmin();
-        }
+<script>
+'use strict';
 
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const { error } = await sb.auth.signInWithPassword({ email, password });
-            if (error) alert("Thông tin đăng nhập không chính xác!");
-            else showAdmin();
-        }
+const SUPABASE_URL = 'https://hfeqabmrqvxmnetzbkhi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZXFhYm1ycXZ4bW5ldHpia2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzI4MTEsImV4cCI6MjA4NzMwODgxMX0.UX7WW9OyTUxwWA2Xyzy1i9RmjsTjU2NFaqrn6Nb1T0M';
+const BUCKET = 'account-images';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function handleLogout() {
-            await sb.auth.signOut();
-            location.reload();
-        }
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const fmtPrice = (n) => Number(n || 0).toLocaleString('vi-VN') + ' ₫';
 
-        function showAdmin() {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('admin-dashboard').style.display = 'block';
-            loadAdmin();
-            // Đăng ký Real-time
-            sb.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadAdmin).subscribe();
-        }
+let items = [];
+let editingId = null;
+let invQuery = '', invFilter = 'all';
 
-        // --- QUẢN LÝ DỮ LIỆU ---
-        async function uploadAcc() {
-            const file = document.getElementById('imgFile').files[0];
-            const code = document.getElementById('accCode').value;
-            const price = document.getElementById('accPrice').value;
-            const btn = document.getElementById('btnUpload');
+function toast(msg, type = 'ok') {
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'error' ? ' toast--error' : '');
+    el.textContent = msg;
+    $('toasts').appendChild(el);
+    setTimeout(() => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 320); }, 2600);
+}
 
-            if(!file || !code || !price) return alert("Nhập đủ đồ đã Cường ơi!");
-            btn.disabled = true; btn.innerText = "ĐANG XỬ LÝ...";
+function confirmDialog({ title, message, okLabel = 'Đồng ý' }) {
+    return new Promise((resolve) => {
+        const root = $('modalRoot');
+        root.innerHTML = `
+            <div class="modal-backdrop">
+                <div class="modal" role="dialog" aria-modal="true">
+                    <h3>${esc(title)}</h3>
+                    <p>${esc(message)}</p>
+                    <div class="modal__actions">
+                        <button class="btn btn--ghost" data-act="cancel" type="button">Hủy</button>
+                        <button class="btn btn--danger" data-act="ok" type="button">${esc(okLabel)}</button>
+                    </div>
+                </div>
+            </div>`;
+        const done = (v) => { root.innerHTML = ''; resolve(v); };
+        root.querySelector('[data-act="ok"]').focus();
+        root.querySelector('[data-act="ok"]').onclick = () => done(true);
+        root.querySelector('[data-act="cancel"]').onclick = () => done(false);
+        root.querySelector('.modal-backdrop').onclick = (e) => { if (e.target === e.currentTarget) done(false); };
+        root.onkeydown = (e) => { if (e.key === 'Escape') done(false); };
+    });
+}
 
-            try {
-                // Xử lý tên file (Xóa dấu/khoảng trắng)
-                const cleanName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, "");
-                const fileName = `${Date.now()}_${cleanName}`;
+/* ---------- Auth ---------- */
+async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) showAdmin();
+}
 
-                const { error: imgErr } = await sb.storage.from('account-images').upload(fileName, file);
-                if(imgErr) throw imgErr;
+$('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('btnLogin');
+    btn.disabled = true; btn.textContent = 'Đang kiểm tra…';
+    const { error } = await sb.auth.signInWithPassword({
+        email: $('email').value, password: $('password').value,
+    });
+    btn.disabled = false; btn.textContent = 'Truy cập hệ thống';
+    if (error) { toast('Thông tin đăng nhập không chính xác.', 'error'); return; }
+    showAdmin();
+});
 
-                const { data: urlData } = sb.storage.from('account-images').getPublicUrl(fileName);
-                const { error: dbErr } = await sb.from('accounts').insert([{ code, price, image_url: urlData.publicUrl, is_sold: false }]);
-                if(dbErr) throw dbErr;
+$('btnLogout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.reload();
+});
 
-                alert("Up thành công!");
-                document.getElementById('imgFile').value = ''; document.getElementById('accCode').value = ''; document.getElementById('accPrice').value = '';
-            } catch (err) {
-                alert("Lỗi: " + err.message);
-            } finally { btn.disabled = false; btn.innerText = "XÁC NHẬN UP CLOUD"; }
-        }
+function showAdmin() {
+    $('loginView').hidden = true;
+    $('adminView').hidden = false;
+    loadAdmin();
+    sb.channel('db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, loadAdmin)
+      .subscribe();
+}
 
-        async function toggleSold(id, status) {
-            await sb.from('accounts').update({ is_sold: !status }).eq('id', id);
-        }
+/* ---------- Dữ liệu ---------- */
+async function loadAdmin() {
+    const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
+    if (error) { toast('Lỗi tải dữ liệu: ' + error.message, 'error'); return; }
+    items = data || [];
+    renderStats();
+    renderInventory();
+}
 
-        async function deleteAcc(id) {
-            if(confirm("Xóa vĩnh viễn tài khoản này?")) {
-                await sb.from('accounts').delete().eq('id', id);
+function renderStats() {
+    const on = items.filter(i => !i.is_sold);
+    const sold = items.filter(i => i.is_sold);
+    $('statOnCount').textContent = on.length;
+    $('statOnValue').textContent = fmtPrice(on.reduce((s, i) => s + Number(i.price), 0));
+    $('statSoldCount').textContent = sold.length;
+    $('statSoldValue').textContent = fmtPrice(sold.reduce((s, i) => s + Number(i.price), 0));
+}
+
+function renderInventory() {
+    const q = invQuery.trim().toLowerCase();
+    const list = items.filter(i =>
+        String(i.code || '').toLowerCase().includes(q) &&
+        (invFilter === 'all' ? true : invFilter === 'available' ? !i.is_sold : i.is_sold)
+    );
+    $('invCount').textContent = list.length + ' / ' + items.length + ' acc';
+    const box = $('invList');
+    if (!list.length) { box.innerHTML = '<p class="empty">Không có acc nào khớp bộ lọc.</p>'; return; }
+    box.innerHTML = list.map(i => `
+        <div class="inv-item ${i.is_sold ? 'is-sold' : ''}" data-id="${Number(i.id)}">
+            <img src="${esc(i.image_url)}" alt="Acc ${esc(i.code)}" loading="lazy">
+            <div class="inv-info">
+                <span class="code">[${esc(i.code)}]</span>
+                <span class="tag ${i.is_sold ? 'tag--off' : 'tag--on'}">${i.is_sold ? 'ĐÃ BÁN' : 'CÒN HÀNG'}</span><br>
+                <span class="price">${fmtPrice(i.price)}</span>
+            </div>
+            <div class="inv-actions">
+                <button class="btn btn--ghost btn--sm" data-act="edit" type="button">Sửa</button>
+                <button class="btn btn--ghost btn--sm" data-act="toggle" type="button">${i.is_sold ? 'Mở lại' : 'Đã bán'}</button>
+                <button class="btn btn--danger-ghost btn--sm" data-act="del" type="button">Xóa</button>
+            </div>
+        </div>`).join('');
+}
+
+/* ---------- Form thêm / sửa ---------- */
+function resetForm() {
+    editingId = null;
+    $('accCode').value = ''; $('accPrice').value = ''; $('imgFile').value = '';
+    $('formTitle').textContent = 'Thêm acc mới';
+    $('btnSave').textContent = 'Đăng acc lên shop';
+    $('imgNote').textContent = 'Chọn ảnh chụp acc (bắt buộc khi thêm mới).';
+    $('btnCancelEdit').hidden = true;
+}
+$('btnCancelEdit').addEventListener('click', resetForm);
+
+const storagePathFromUrl = (url) => {
+    const marker = '/' + BUCKET + '/';
+    const idx = String(url || '').indexOf(marker);
+    return idx === -1 ? null : decodeURIComponent(String(url).slice(idx + marker.length));
+};
+
+async function uploadImage(file) {
+    const cleanName = file.name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
+    const fileName = Date.now() + '_' + cleanName;
+    const { error } = await sb.storage.from(BUCKET).upload(fileName, file);
+    if (error) throw error;
+    return sb.storage.from(BUCKET).getPublicUrl(fileName).data.publicUrl;
+}
+
+$('btnSave').addEventListener('click', async () => {
+    const code = $('accCode').value.trim();
+    const price = $('accPrice').value;
+    const file = $('imgFile').files[0];
+
+    if (!code || !price) { toast('Nhập đủ mã acc và giá bán nhé.', 'error'); return; }
+    if (!editingId && !file) { toast('Thêm mới cần có ảnh acc.', 'error'); return; }
+
+    const btn = $('btnSave');
+    btn.disabled = true; btn.textContent = 'Đang xử lý…';
+    try {
+        if (editingId) {
+            const current = items.find(i => Number(i.id) === editingId);
+            const payload = { code, price };
+            if (file) {
+                payload.image_url = await uploadImage(file);
+                const oldPath = storagePathFromUrl(current?.image_url);
+                if (oldPath) await sb.storage.from(BUCKET).remove([oldPath]);
             }
+            const { error } = await sb.from('accounts').update(payload).eq('id', editingId);
+            if (error) throw error;
+            toast('Đã cập nhật acc ' + code + '.');
+        } else {
+            const image_url = await uploadImage(file);
+            const { error } = await sb.from('accounts').insert([{ code, price, image_url, is_sold: false }]);
+            if (error) throw error;
+            toast('Đã đăng acc ' + code + ' lên shop.');
         }
+        resetForm();
+        await loadAdmin();
+    } catch (err) {
+        toast('Lỗi: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = editingId ? 'Cập nhật acc' : 'Đăng acc lên shop';
+    }
+});
 
-        async function loadAdmin() {
-            // Sắp xếp theo created_at (Cần có cột này trong bảng)
-            const { data, error } = await sb.from('accounts').select('*').order('created_at', { ascending: false });
-            if (error) return console.error(error);
-            
-            const grid = document.getElementById('adminGrid');
-            grid.innerHTML = '';
-            data.forEach(item => {
-                grid.innerHTML += `
-                    <div class="acc-item" style="${item.is_sold ? 'opacity:0.6' : ''}">
-                        <img src="${item.image_url}">
-                        <div class="acc-info">
-                            <b>[${item.code}] <span class="tag ${item.is_sold ? 'tag-sold' : 'tag-active'}">${item.is_sold ? 'SOLD' : 'AVAILABLE'}</span></b>
-                            <span style="color:var(--accent)">${Number(item.price).toLocaleString()} VNĐ</span>
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <button onclick="toggleSold(${item.id}, ${item.is_sold})" style="background:#444; border:none; color:white; padding:8px 12px; cursor:pointer; border-radius:6px;">
-                                ${item.is_sold ? 'Mở lại' : 'Đã bán'}
-                            </button>
-                            <button onclick="deleteAcc(${item.id})" style="background:transparent; border:none; color:#ff4444; cursor:pointer; font-weight:bold;">Xóa</button>
-                        </div>
-                    </div>`;
-            });
-        }
+/* ---------- Thao tác kho ---------- */
+$('invList').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const id = Number(btn.closest('.inv-item').dataset.id);
+    const item = items.find(i => Number(i.id) === id);
+    if (!item) return;
 
-        checkSession();
-    </script>
+    if (btn.dataset.act === 'edit') {
+        editingId = id;
+        $('accCode').value = item.code || '';
+        $('accPrice').value = item.price;
+        $('imgFile').value = '';
+        $('formTitle').textContent = 'Sửa acc [' + item.code + ']';
+        $('btnSave').textContent = 'Cập nhật acc';
+        $('imgNote').textContent = 'Để trống nếu giữ ảnh cũ — chọn ảnh mới sẽ thay thế (ảnh cũ tự xóa).';
+        $('btnCancelEdit').hidden = false;
+        $('accCode').focus();
+        $('accCode').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    if (btn.dataset.act === 'toggle') {
+        const { error } = await sb.from('accounts').update({ is_sold: !item.is_sold }).eq('id', id);
+        if (error) { toast('Lỗi: ' + error.message, 'error'); return; }
+        toast(item.is_sold ? 'Đã mở bán lại [' + item.code + '].' : 'Đã đánh dấu [' + item.code + '] là đã bán.');
+        await loadAdmin();
+    }
+
+    if (btn.dataset.act === 'del') {
+        const ok = await confirmDialog({
+            title: 'Xóa acc [' + item.code + ']?',
+            message: 'Acc và ảnh trên Storage sẽ bị xóa vĩnh viễn. Không thể hoàn tác.',
+            okLabel: 'Xóa vĩnh viễn',
+        });
+        if (!ok) return;
+        const { error } = await sb.from('accounts').delete().eq('id', id);
+        if (error) { toast('Lỗi: ' + error.message, 'error'); return; }
+        const path = storagePathFromUrl(item.image_url);
+        if (path) await sb.storage.from(BUCKET).remove([path]);
+        if (editingId === id) resetForm();
+        toast('Đã xóa acc [' + item.code + '] và dọn ảnh.');
+        await loadAdmin();
+    }
+});
+
+/* ---------- Tìm + lọc kho ---------- */
+$('invSearch').addEventListener('input', (e) => { invQuery = e.target.value; renderInventory(); });
+document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        invFilter = chip.dataset.filter;
+        renderInventory();
+    });
+});
+
+checkSession();
+</script>
 </body>
 </html>
